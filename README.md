@@ -1,36 +1,152 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚀 AI Resume Builder & Analyzer
 
-## Getting Started
+A production-grade full-stack application that allows users to create, manage, and optimize resumes using AI.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 🧠 Features
+
+### ✅ Resume Builder
+
+* Structured resume creation (Education, Skills, Projects, Experience)
+* Stored as clean JSON for AI processing
+
+### 🤖 AI Resume Analyzer *(Coming Soon)*
+
+* Resume scoring (ATS-style)
+* Missing skills detection
+* Section-wise feedback
+
+### ✨ AI Resume Improver *(Coming Soon)*
+
+* Rewrites weak bullet points
+* Enhances impact using industry-level language
+
+### 🎯 Job Matching *(Planned)*
+
+* Match resume with job descriptions
+* Skill gap analysis
+* Match percentage scoring
+
+---
+
+## 🔐 Authentication
+
+* JWT-based authentication
+* Access + Refresh token flow
+* Secure HTTP-only cookies
+* Silent session refresh
+
+---
+
+## 🧩 Architecture
+
+### 🗂 Models
+
+* **User**
+
+  * username, email, password
+  * `activeResumeId` (single source of truth)
+
+* **Resume**
+
+  * structured content (JSON)
+  * education, skills, projects, experience
+
+---
+
+## ⚙️ Key Design Decisions
+
+### ✅ Active Resume Handling
+
+* Uses `activeResumeId` in User model
+* Avoids race conditions
+* Single atomic DB update
+* Scalable and production-safe
+
+---
+
+## 📡 API Endpoints
+
+### Resume
+
+#### 🔹 Create Resume
+
+```
+POST /api/resumes
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+#### 🔹 Get Resumes (with pagination)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+GET /api/resumes?page=1&limit=20
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+#### 🔹 Activate Resume
 
-## Learn More
+```
+PATCH /api/resumes/:id/activate
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🛠 Tech Stack
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+* **Frontend:** Next.js (App Router)
+* **Backend:** Next.js API Routes
+* **Database:** MongoDB + Mongoose
+* **Validation:** Zod
+* **Auth:** JWT (Access + Refresh tokens)
+* **AI (Planned):** Gemini / OpenAI
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📈 Scalability Considerations
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+* Lean queries for performance
+* Indexed fields for fast lookup
+* Atomic updates to prevent race conditions
+* Modular validation schemas
+* Clean separation of concerns
+
+---
+
+## 🚧 Roadmap
+
+* [x] Authentication system
+* [x] Resume CRUD APIs
+* [x] Active resume architecture
+* [ ] AI Resume Analyzer
+* [ ] AI Resume Improver
+* [ ] Job Matching System
+* [ ] Resume Versioning
+
+---
+
+## ⚡ Getting Started
+
+```bash
+git clone <repo-url>
+cd project
+npm install
+npm run dev
+```
+
+---
+
+## 📌 Environment Variables
+
+```
+MONGODB_URI=
+JWT_SECRET=
+ACCESS_TOKEN_EXPIRY=
+REFRESH_TOKEN_EXPIRY=
+```
+
+---
+
+## 💡 Author
+
+Built with a focus on **scalable backend architecture + AI integration**.
+
+---
