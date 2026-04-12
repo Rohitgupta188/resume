@@ -16,6 +16,7 @@ const versionContentSchema = z.union([
 export const createResumeVersionSchema = z
   .object({
     resumeId: objectIdSchema,
+    userId: objectIdSchema,
 
     versionNumber: z
       .number({

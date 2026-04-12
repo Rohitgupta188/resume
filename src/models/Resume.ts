@@ -36,7 +36,7 @@ export interface IResume extends Document {
       bullets: string[];
     }>;
   };
-
+  lastAiProcessedHash: string;
   rawText?: string; 
   atsScore?: number;
   pdfUrl?: string;
@@ -61,7 +61,10 @@ const ResumeSchema: Schema = new Schema<IResume>(
       required: true,
       default: {},
     },
-
+    lastAiProcessedHash: {
+      type: String,
+      default: null,
+    },
     rawText: { type: String },
     atsScore: { type: Number, min: 0, max: 10 },
     pdfUrl: { type: String },
@@ -71,8 +74,6 @@ const ResumeSchema: Schema = new Schema<IResume>(
   },
 );
 
-
-ResumeSchema.index({ userId: 1, isActive: 1 });
 ResumeSchema.index({ title: "text" });
 
 export default (mongoose.models.Resume as Model<IResume>) ||

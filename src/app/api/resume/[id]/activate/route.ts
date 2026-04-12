@@ -12,15 +12,11 @@ import {
   error,
 } from "@/lib/api-response";
 
-type Params = {
-  params: { id: string };
-};
-
-export const PATCH = withAuth<Params>(async (req: NextRequest, { user, params }) => {
+export const PATCH = withAuth(async (req: NextRequest, { user, params }) => {
   return handleRoute(async () => {
     await connectToDatabase();
 
-    const { id } = params;
+    const { id } = await params!;
 
     
     const parsed = objectIdSchema.safeParse(id);
@@ -51,10 +47,9 @@ export const PATCH = withAuth<Params>(async (req: NextRequest, { user, params })
       });
     }
 
-    await User.updateOne(
-      { _id: user.sub },
-      { $set: { activeResumeId: id } }
-    );
+      await User.findByIdAndUpdate(user.sub, {
+        activeResumeId: id,
+      });
 
     return success({
       message: "Active resume updated successfully",

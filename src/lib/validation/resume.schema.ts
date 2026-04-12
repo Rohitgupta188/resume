@@ -78,8 +78,6 @@ export const createResumeSchema = z.object({
 
   title: nonEmptyString("Resume title", 100),
 
-  isActive: z.boolean().default(false),
-
   content: resumeContentSchema,
 
   rawText: z.string().trim().optional(),
