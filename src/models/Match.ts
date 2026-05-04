@@ -50,5 +50,8 @@ const MatchSchema: Schema = new Schema<IMatch>(
   { timestamps: true }
 );
 
+// Prevent duplicate matches for the same user + resume + job combination
+MatchSchema.index({ userId: 1, resumeId: 1, jobId: 1 }, { unique: true });
+
 export default (mongoose.models.Match as Model<IMatch>) || 
        mongoose.model<IMatch>("Match", MatchSchema);

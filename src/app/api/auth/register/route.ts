@@ -1,15 +1,14 @@
 import { NextRequest } from "next/server";
-import { userRegistrationSchema } from "@/lib/validation";
+import { userRegistrationApiSchema } from "@/lib/validation";
 import { setAuthCookies } from "@/lib/auth";
 import { registerUser, sanitizeUser } from "@/lib/auth/auth.service";
 import { handleRoute, created, error, conflict, validationError } from "@/lib/api-response";
-import { ZodError } from "zod";
 
 export async function POST(req: NextRequest) {
   return handleRoute(async () => {
     const body = await req.json();
 
-    const parsed = userRegistrationSchema.safeParse(body);
+    const parsed = userRegistrationApiSchema.safeParse(body);
     if (!parsed.success) {
       return validationError(parsed.error);
     }

@@ -18,8 +18,8 @@ const strongPasswordField = z
     error: (issue) =>
       issue.input === undefined ? "Password is required" : "Password must be a string",
   })
-  .min(8, { error: "Password must be at least 8 characters" })
-  .max(128, { error: "Password is too long" })
+  .min(6, { error: "Password must be at least 6 characters" })
+  .max(50, { error: "Password is too long" })
   .regex(/[A-Z]/, { error: "Password must contain at least one uppercase letter" })
   .regex(/[a-z]/, { error: "Password must contain at least one lowercase letter" })
   .regex(/[0-9]/, { error: "Password must contain at least one number" })
@@ -27,11 +27,17 @@ const strongPasswordField = z
     error: "Password must contain at least one special character",
   });
 
+const registrationFields = {
+  username: usernameField,
+  email: emailSchema,
+  password: strongPasswordField,
+};
+
+export const userRegistrationApiSchema = z.object(registrationFields);
+
 export const userRegistrationSchema = z
   .object({
-    username: usernameField,
-    email: emailSchema,
-    password: strongPasswordField,
+    ...registrationFields,
     confirmPassword: z.string({
       error: (issue) =>
         issue.input === undefined

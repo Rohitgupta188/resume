@@ -17,8 +17,6 @@ import {
   validationError,
 } from "@/lib/api-response";
 
-import lodash from "lodash";
-
 async function getOwnedResume(id: string, userId: string) {
   const idResult = objectIdSchema.safeParse(id);
 
@@ -73,7 +71,7 @@ export const PATCH = withAuth(async (req, { user, params }) => {
   return handleRoute(async () => {
     await connectToDatabase();
 
-    const { id } = params;
+    const { id } = await params!;
 
     const result = await getOwnedResume(id, user.sub);
 
@@ -98,33 +96,40 @@ export const PATCH = withAuth(async (req, { user, params }) => {
 
     const nextVersion = lastVersion ? lastVersion.versionNumber + 1 : 1;
 
-    //  Create version BEFORE update
+    // Snapshot current content before applying update (for version history / rollback)
     await ResumeVersion.create({
       resumeId: id,
       userId: user.sub,
       content: result.resume.content,
-      versionNumber: nextVersion, 
+      versionNumber: nextVersion,
       type: "manual",
-      changesSummary: "User updated resume",
+      changesSummary: "Snapshot before manual update",
     });
 
     const updatePayload: Record<string, unknown> = {
       ...parsed.data,
     };
 
-    //  Deep merge content (partial updates safe)
+    // Merge content: objects are shallow-merged, arrays are replaced entirely
+    // (so users can actually remove skills, experience entries, etc.)
     if (parsed.data.content) {
-      updatePayload.content = lodash.merge(
-        {},
-        result.resume.content || {},
-        parsed.data.content,
-      );
+      const existing = result.resume.content || {};
+      const incoming = parsed.data.content;
+
+      updatePayload.content = {
+        ...existing,
+        ...incoming,
+        // For nested objects like personalInfo, shallow merge one level deeper
+        ...(incoming.personalInfo && {
+          personalInfo: { ...existing.personalInfo, ...incoming.personalInfo },
+        }),
+      };
     }
 
     const updated = await Resume.findByIdAndUpdate(
       id,
       { $set: updatePayload },
-      { new: true, runValidators: true },
+      { returnDocument: "after", runValidators: true },
     ).lean();
 
     if (!updated) {
@@ -153,7 +158,7 @@ export const DELETE = withAuth(async (req, { user, params }) => {
   return handleRoute(async () => {
     await connectToDatabase();
 
-    const { id } = params;
+    const { id } = await params!;
 
     const result = await getOwnedResume(id, user.sub);
 

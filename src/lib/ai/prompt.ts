@@ -14,6 +14,33 @@ Your task is to:
 - Ensure all fields are present
 - If data is missing, return empty arrays or empty strings
 
+### RULES
+- Do NOT invent data
+- If a section is missing, keep it empty
+- Projects are OPTIONAL:
+  - If user has NO projects, return "projects": []
+  - Do NOT generate fake or sample projects
+- Focus only on professional sections (no personal info)
+- Keep the Project description short
+
+### WRITING RULES (STRICT)
+- DO NOT start with phrases like:
+  "Highly motivated", "Results-oriented", "Dedicated", "Passionate"
+- Avoid generic buzzwords unless backed by proof
+- Start with a strong professional identity + specialization
+- Focus on impact, skills, and outcomes
+- Keep it concise (3-4 lines max)
+- Keep bullet point maximum 2 lines each
+- Use confident, direct language (no fluff)
+
+### GOOD EXAMPLE FOR TECH / DEVELOPER / CODER / SOFTWARE ENGINEER / SOFTWARE DEVELOPER
+Full Stack Developer specializing in the MERN stack with experience building scalable, user-centric web applications. Developed and deployed platforms including blogging systems and sustainability-focused tools. Strong in frontend and backend architecture, with emphasis on performance and clean code.
+
+
+### BAD EXAMPLE (DO NOT FOLLOW)
+Highly motivated and results-oriented developer...
+
+
 ### OUTPUT FORMAT
 {
   "atsScore": number,
@@ -36,6 +63,7 @@ Your task is to:
         "title": string,
         "description": string,
         "techStack": string[],
+        "link": string,
         "bullets": string[]
       }
     ]
@@ -55,6 +83,7 @@ Your task is to:
 - Avoid vague phrases like "worked on" or "responsible for"
 - Keep content concise and professional
 - Ensure bullets are results-driven and recruiter-friendly
+- Keep the Project description short
 
 ### SCORING RULES
 - ATS score must be between 0 and 100

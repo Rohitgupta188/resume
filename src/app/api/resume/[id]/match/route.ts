@@ -85,7 +85,20 @@ export const POST = withAuth(async (req, { user, params }) => {
     try {
       parsedAI = JSON.parse(text);
     } catch {
-      throw new Error("AI response parsing failed");
+      // Fallback: try extracting JSON between first { and last }
+      const start = text.indexOf("{");
+      const end = text.lastIndexOf("}");
+      if (start !== -1 && end > start) {
+        try {
+          parsedAI = JSON.parse(text.slice(start, end + 1));
+        } catch {
+          console.warn("[AI Match Parse Fail] Raw response:", text.slice(0, 500));
+          throw new Error("AI response parsing failed");
+        }
+      } else {
+        console.warn("[AI Match Parse Fail] No JSON found:", text.slice(0, 500));
+        throw new Error("AI response parsing failed");
+      }
     }
 
     if (

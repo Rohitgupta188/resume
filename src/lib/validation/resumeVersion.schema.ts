@@ -43,16 +43,8 @@ export const createResumeVersionSchema = z
       .trim()
       .max(2_000, { error: "Changes summary must be at most 2,000 characters" })
       .optional(),
-  })
-  .superRefine(({ type, aiPromptUsed }, ctx) => {
-    if (type === "ai_improved" && !aiPromptUsed) {
-      ctx.addIssue({
-        code: "custom",
-        message: "aiPromptUsed is required for ai_improved versions",
-        path: ["aiPromptUsed"],
-      });
-    }
   });
+
 
 export const updateResumeVersionSchema = z.object({
   changesSummary: z

@@ -19,7 +19,7 @@ const UserSchema: Schema = new Schema<IUser>(
       lowercase: true,
       trim: true,
     },
-    password: { type: String, required: true, minlength: 6 },
+    password: { type: String, required: true, minlength: 6, select: false },
 
     activeResumeId: {
     type: mongoose.Schema.Types.ObjectId,

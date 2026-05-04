@@ -3,6 +3,7 @@ import mongoose, { Schema, Document, Model } from "mongoose";
 export interface IResume extends Document {
   userId: mongoose.Types.ObjectId;
   title: string;
+  templateId?: string;
 
   content: {
     personalInfo: {
@@ -56,6 +57,11 @@ const ResumeSchema: Schema = new Schema<IResume>(
       type: String,
       required: true,
     },
+    templateId: {
+      type: String,
+      enum: ["modern", "professional", "minimalist", "executive", "creative"],
+      default: "modern",
+    },
     content: {
       type: Object,
       required: true,
@@ -66,7 +72,7 @@ const ResumeSchema: Schema = new Schema<IResume>(
       default: null,
     },
     rawText: { type: String },
-    atsScore: { type: Number, min: 0, max: 10 },
+    atsScore: { type: Number, min: 0, max: 100 },
     pdfUrl: { type: String },
   },
   {

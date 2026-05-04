@@ -13,7 +13,6 @@ export const nonEmptyString = (label: string, max = 500) =>
         issue.input === undefined ? `${label} is required` : `${label} must be a string`,
     })
     .trim()
-    .min(1, { error: `${label} cannot be empty` })
     .max(max, { error: `${label} must be at most ${max} characters` });
 
 export const optionalUrlSchema = z
@@ -26,12 +25,12 @@ export const optionalUrlSchema = z
   .optional();
 
 export const emailSchema = z
-  .email({
-    error: (issue) =>
-      issue.input === undefined ? "Email is required" : "Invalid email address",
-  })
+  .string()
   .trim()
-  .toLowerCase();
+  .toLowerCase()
+  .refine((val) => val === "" || z.string().email().safeParse(val).success, {
+    message: "Invalid email address",
+  });
 
 export const coercedDateSchema = z.coerce.date({
   error: (issue) =>
@@ -53,7 +52,7 @@ export const percentageSchema = z
 export const atsScoreSchema = z
   .number()
   .min(0, { error: "ATS score must be at least 0" })
-  .max(10, { error: "ATS score must be at most 10" })
+  .max(100, { error: "ATS score must be at most 100" })
   .optional();
 
 

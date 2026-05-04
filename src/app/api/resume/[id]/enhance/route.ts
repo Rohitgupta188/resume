@@ -1,11 +1,10 @@
-import { NextRequest } from "next/server";
 import crypto from "crypto";
 import { withAuth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db";
 import Resume from "@/models/Resume";
 import User from "@/models/User";
 import ResumeAnalysis from "@/models/ResumeAnalysis";
-import ResumeVersion from "@/models/ResumeVersion";
+import mongoose from "mongoose";
 import {
   handleRoute,
   success,
@@ -13,31 +12,71 @@ import {
   notFound,
   forbidden,
 } from "@/lib/api-response";
-import { objectIdSchema } from "@/lib/validation";
+import { aiResponseSchema, objectIdSchema } from "@/lib/validation";
+import { normalizeAIResponse } from "@/lib/ai-normalised";
+import { GoogleGenAI } from "@google/genai";
 import { sanitizeResumeForAI } from "@/lib/ai/sanitize";
 import {
   ENHANCE_RESUME_PROMPT,
   ENHANCE_RESUME_SYSTEM_PROMPT,
 } from "@/lib/ai/prompt";
 import { generateWithRetry } from "@/lib/ai/retry";
-
-import { GoogleGenAI } from "@google/genai";
-
-const RATE_LIMIT_WINDOW = 60 * 1000; // 1 min
-const MAX_REQUESTS = 15;
-
-let requestLog: number[] = [];
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY!,
 });
 
-function generateHash(content: any) {
-  return crypto
-    .createHash("sha256")
-    .update(JSON.stringify(content))
-    .digest("hex");
+function stableHash(content: any) {
+  const stringify = (obj: any): string => {
+    if (obj === undefined) return "undefined";
+    if (obj === null) return "null";
+    if (typeof obj !== "object") return JSON.stringify(obj);
+    
+    if (Array.isArray(obj)) {
+      return "[" + obj.map(stringify).join(",") + "]";
+    }
+    
+    const keys = Object.keys(obj).sort();
+    return "{" + keys.map(k => `"${k}":${stringify(obj[k])}`).join(",") + "}";
+  };
+
+  const str = stringify(content);
+  const hash = crypto.createHash("sha256").update(str).digest("hex");
+  console.log(`[AI Enhance] Hash generated: ${hash}`);
+  return hash;
 }
+
+function extractJSON(text: string) {
+  // Remove markdown fences
+  const cleaned = text.replace(/```json|```/g, "").trim();
+
+  // Try direct parse first
+  try {
+    return JSON.parse(cleaned);
+  } catch {}
+
+  // Robust JSON extraction using bracket matching
+  let start = cleaned.indexOf("{");
+  if (start === -1) return null;
+
+  let depth = 0;
+
+  for (let i = start; i < cleaned.length; i++) {
+    if (cleaned[i] === "{") depth++;
+    if (cleaned[i] === "}") depth--;
+
+    if (depth === 0) {
+      const candidate = cleaned.slice(start, i + 1);
+      try {
+        return JSON.parse(candidate);
+      } catch {}
+    }
+  }
+
+  return null;
+}
+
 export const POST = withAuth(async (req, { user, params }) => {
   return handleRoute(async () => {
     // validate ID
@@ -55,18 +94,19 @@ export const POST = withAuth(async (req, { user, params }) => {
 
     await connectToDatabase();
 
-    const now = Date.now();
-    requestLog = requestLog.filter((t) => now - t < RATE_LIMIT_WINDOW);
+    const rateCheck = await checkRateLimit({
+      key: `enhance:${user.sub}`,
+      windowMs: 60 * 1000, // 1 minute
+      maxRequests: 15,
+    });
 
-    if (requestLog.length >= MAX_REQUESTS) {
+    if (!rateCheck.allowed) {
       return error("Too many requests. Please slow down.", 429);
     }
 
-    requestLog.push(now);
-
     const [currentUser, resume] = await Promise.all([
       User.findById(user.sub).select("activeResumeId").lean(),
-      Resume.findOne({ _id: id, userId: user.sub }),
+      Resume.findOne({ _id: id, userId: user.sub }).lean(),
     ]);
 
     if (!currentUser?.activeResumeId) {
@@ -79,28 +119,34 @@ export const POST = withAuth(async (req, { user, params }) => {
 
     if (!resume) return notFound("Resume not found");
 
-    if (!id || !resume._id.equals(id)) {
+    if (!id || resume._id.toString() !== id) {
       return error("Unauthorized access", 401);
     }
 
-    const latestVersion = await ResumeVersion.findOne({ resumeId: id })
-      .sort({ versionNumber: -1 })
-      .lean();
+    const currentHash = stableHash(resume.content);
 
-    const nextVersionNumber = latestVersion
-      ? (latestVersion.versionNumber ?? 0) + 1
-      : 1;
+    const existingAnalysis = await ResumeAnalysis.findOne({
+      resumeId: resume._id,
+      contentHash: currentHash,
+    }).lean();
 
-    const currentHash = generateHash(resume.content);
-
-    if (resume.lastAiProcessedHash === currentHash) {
-      return error("Resume already enhanced. Modify content first.", 400);
+    if (existingAnalysis) {
+      console.log(`[AI Enhance] Cache HIT for resume ${id}`);
+      return success({
+        message: "Already enhanced",
+        cached: true,
+        atsScore: existingAnalysis.atsScore,
+        improvedContent: existingAnalysis.improvedContent, 
+        analysis: existingAnalysis,
+        contentHash: currentHash,
+      });
     }
-
+    
+    console.log(`[AI Enhance] Cache MISS for resume ${id}. Generating new...`);
     const safeContent = sanitizeResumeForAI(resume.content);
     const prompt = ENHANCE_RESUME_PROMPT(safeContent);
 
-    const result = await generateWithRetry(
+    const genResult = await generateWithRetry(
       () =>
         ai.models.generateContent({
           model: "gemini-2.5-flash",
@@ -121,24 +167,25 @@ export const POST = withAuth(async (req, { user, params }) => {
         }),
     );
 
-    if (result === false) {
+    if (genResult === false) {
       return error(
         "AI is currently busy. Please try again in a few seconds.",
         503,
       );
     }
 
-    const { response, modelUsed } = result; 
+    const { response, modelUsed } = genResult;
 
     let text = response.text || "";
 
     text = text.replace(/```json|```/g, "").trim();
 
-    let parsedAI;
+    const parsedAI = extractJSON(text);
 
-    try {
-      parsedAI = JSON.parse(text);
-    } catch {
+    if (!parsedAI) {
+      console.warn("[AI Parse Fail]", {
+        preview: text.slice(0, 500),
+      });
       throw new Error("AI response parsing failed");
     }
 
@@ -146,60 +193,62 @@ export const POST = withAuth(async (req, { user, params }) => {
       throw new Error("Invalid AI response structure");
     }
 
-    await ResumeAnalysis.create({
-      userId: user.sub,
-      resumeId: resume._id,
-      atsScore: parsedAI.atsScore,
-      sectionFeedback: parsedAI.sectionFeedback,
-      missingSkills: parsedAI.missingSkills,
-      strengths: parsedAI.strengths,
-      weaknesses: parsedAI.weaknesses,
-      suggestions: parsedAI.suggestions,
-      modelUsed,
-    });
+    const normalized = normalizeAIResponse(parsedAI);
 
-    const improved = parsedAI.improvedContent;
+    const validationResult = aiResponseSchema.safeParse(normalized);
 
-    await ResumeVersion.create({
-      resumeId: resume._id,
-      userId: user.sub,
-      versionNumber: nextVersionNumber,
-      content: improved,
-      type: "ai_improved",
-      changesSummary: "AI enhanced resume",
-    });
+    if (!validationResult.success) {
+      console.error("[Schema Validation Error]", validationResult.error);
+      throw new Error("Invalid AI response schema");
+    }
 
-    const updatedContent = {
-      ...resume.content,
-      summary:
-        typeof improved?.summary === "string"
-          ? improved.summary
-          : resume.content.summary,
-      skills:
-        typeof improved?.skills === "string"
-          ? improved.skills
-          : resume.content.skills,
-      projects: Array.isArray(improved?.projects)
-        ? improved.projects
-        : resume.content.projects,
-    };
+    const validAI = validationResult.data;
+    const session = await mongoose.startSession();
+    session.startTransaction();
 
-    const newHash = generateHash(updatedContent);
+    try {
+      await ResumeAnalysis.create(
+        [
+          {
+            userId: user.sub,
+            resumeId: resume._id,
+            contentHash: currentHash,
+            atsScore: validAI.atsScore,
+            improvedContent: validAI.improvedContent,
+            sectionFeedback: validAI.sectionFeedback,
+            missingSkills: validAI.missingSkills,
+            strengths: validAI.strengths,
+            weaknesses: validAI.weaknesses,
+            suggestions: validAI.suggestions,
+            modelUsed,
+          },
+        ],
+        { session },
+      );
 
-    const updatedResume = await Resume.findByIdAndUpdate(
-      resume._id,
-      {
-        content: updatedContent,
-        lastAiProcessedHash: newHash,
-        atsScore: parsedAI.atsScore,
-      },
-      { returnDocument: "after" },
-    ).lean();
+      await Resume.updateOne(
+        { _id: resume._id },
+        { lastAiProcessedHash: currentHash },
+        { session },
+      );
+
+      await session.commitTransaction();
+    } catch (e) {
+      await session.abortTransaction();
+      throw e;
+    } finally {
+      session.endSession();
+    }
+
+    
 
     return success({
-      message: "Resume enhanced successfully",
-      atsScore: parsedAI.atsScore,
-      resume: updatedResume,
+      message: "Resume enhancement generated",
+      atsScore: validAI.atsScore,
+      improvedContent: validAI.improvedContent,
+      analysis: validAI,
+      contentHash: currentHash
+
     });
   });
 });

@@ -3,13 +3,15 @@ import { withAuth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db";
 import Resume from "@/models/Resume";
 import ResumeVersion from "@/models/ResumeVersion";
-import { createResumeSchema, paginationSchema } from "@/lib/validation";
+import { createResumeSchema } from "@/lib/validation";
 import {
   handleRoute,
   success,
   created,
   validationError,
 } from "@/lib/api-response";
+
+import User from "@/models/User";
 
 export const GET = withAuth(async (req, { user }) => {
   return handleRoute(async () => {
@@ -28,12 +30,20 @@ export const GET = withAuth(async (req, { user }) => {
       ];
     }
 
-    const resumes = await Resume.find(filter)
-      .sort({ updatedAt: -1 })
-      .limit(50)
-      .lean();
+    // Fetch resumes and user's activeResumeId in parallel
+    const [resumes, userDoc] = await Promise.all([
+      Resume.find(filter).sort({ updatedAt: -1 }).limit(50).lean(),
+      User.findById(user.sub).select("activeResumeId").lean(),
+    ]);
 
-    return success({resumes});
+    const activeId = userDoc?.activeResumeId?.toString();
+
+    const resumesWithActive = resumes.map((r) => ({
+      ...r,
+      isActive: r._id.toString() === activeId,
+    }));
+
+    return success({ resumes: resumesWithActive });
   });
 });
 

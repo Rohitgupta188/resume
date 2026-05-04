@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { userLoginSchema } from "@/lib/validation";
 import { setAuthCookies } from "@/lib/auth";
 import { loginUser, sanitizeUser } from "@/lib/auth/auth.service";
-import { handleRoute, success, unauthorized, validationError } from "@/lib/api-response";
+import { handleRoute, success, unauthorized, validationError, notFound } from "@/lib/api-response";
 
 export async function POST(req: NextRequest) {
   return handleRoute(async () => {
@@ -16,7 +16,16 @@ export async function POST(req: NextRequest) {
     const result = await loginUser(parsed.data);
 
     if (!result.ok) {
-      return unauthorized(result.error);
+      
+      if (result.error === "USER_NOT_FOUND") {
+        return notFound("User not found");
+      }
+
+      if (result.error === "INVALID_PASSWORD") {
+        return unauthorized("Invalid email or password");
+      }
+
+      return unauthorized(result.error || "Login failed");
     }
 
     await setAuthCookies(result.accessToken, result.refreshToken);

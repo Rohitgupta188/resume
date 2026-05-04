@@ -13,13 +13,14 @@ export interface IResumeAnalysis extends Document {
     projects?: string;
     skills?: string;
   };
-  
+
   missingSkills: string[];
   strengths: string[];
   weaknesses: string[];
 
   suggestions: string[];
-
+  improvedContent: Object;
+  contentHash: string;
   modelUsed?: string; // e.g. "gemini-pro"
   tokensUsed?: number;
 
@@ -78,6 +79,15 @@ const ResumeAnalysisSchema: Schema = new Schema<IResumeAnalysis>(
       default: [],
     },
 
+    improvedContent: {
+      type: Object,
+      required: true,
+    },
+
+    contentHash: {
+      type: String,
+    },
+
     modelUsed: {
       type: String,
     },
@@ -88,11 +98,11 @@ const ResumeAnalysisSchema: Schema = new Schema<IResumeAnalysis>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // 🔥 Indexes for performance
-ResumeAnalysisSchema.index({ resumeId: 1, createdAt: -1 }); // latest analysis fast
+ResumeAnalysisSchema.index({ resumeId: 1, contentHash: 1, createdAt: -1 }); // latest analysis fast
 
 export default (mongoose.models.ResumeAnalysis as Model<IResumeAnalysis>) ||
   mongoose.model<IResumeAnalysis>("ResumeAnalysis", ResumeAnalysisSchema);
