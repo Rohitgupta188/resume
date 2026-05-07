@@ -1,155 +1,367 @@
 "use client";
-
 import React from "react";
+import { CustomSectionsBlock } from "./CustomSectionsBlock";
+import { ResumeLink, cleanUrl } from "./resume-utils";
+
+/* ─────────────────────────────────────────────────────────────
+   PROFESSIONAL — Classic single-column, recruiter-trusted layout
+   Serif-inspired feel, burgundy accent #7c2d3e
+   Clean section rules, bold job titles, scannable bullets
+───────────────────────────────────────────────────────────── */
+
+const DEFAULT_BURGUNDY = "#7c2d3e";
 
 export function ProfessionalPreview({ content }: { content: any }) {
-  const {
-    personalInfo = {},
-    summary = "",
-    experience = [],
-    education = [],
-    skills = [],
-    projects = [],
-    certifications = [],
-    languages = [],
-  } = content;
+  const safeContent = content || {};
+  const personalInfo = safeContent.personalInfo || {};
+  const summary = safeContent.summary || "";
+  const experience = safeContent.experience || [];
+  const education = safeContent.education || [];
+  const skills = safeContent.skills || [];
+  const projects = safeContent.projects || [];
+  const certifications = safeContent.certifications || [];
+  const languages = safeContent.languages || [];
+  const customSections = safeContent.customSections || [];
+  const themeColor = safeContent.themeColor || DEFAULT_BURGUNDY;
+
+  const FONT_SCALES: Record<string, number> = {
+    small: 0.9,
+    normal: 1,
+    large: 1.1,
+  };
+  const scale = FONT_SCALES[safeContent.fontSize || "normal"] || 1;
+
+  const Rule = () => (
+    <div
+      className="border-b mb-[6px]"
+      style={{ borderBottomColor: themeColor }}
+    />
+  );
+
+  const SectionTitle = ({ children }: { children: React.ReactNode }) => (
+    <div className="mb-[8px]">
+      <h2
+        className="text-[10pt] font-extrabold uppercase tracking-[0.15em]"
+        style={{ color: themeColor }}
+      >
+        {children}
+      </h2>
+      <Rule />
+    </div>
+  );
+
+  const sectionOrder = safeContent.sectionOrder || [
+    "summary",
+    "experience",
+    "education",
+    "projects",
+    "skills",
+    "certifications",
+    "languages",
+    "customSections",
+  ];
+
+  const renderSection = (id: string) => {
+    switch (id) {
+      case "summary":
+        return (
+          summary && (
+            <section key="summary">
+              <SectionTitle>Professional Summary</SectionTitle>
+              <p className="text-[9.5pt] text-[#374151] leading-[1.65]">
+                {summary}
+              </p>
+            </section>
+          )
+        );
+      case "experience":
+        return (
+          experience.length > 0 && (
+            <section key="experience">
+              <SectionTitle>Work Experience</SectionTitle>
+              <div className="space-y-[10pt]">
+                {experience.map((exp: any, i: number) => (
+                  <div
+                    key={i}
+                    style={{ breakInside: "avoid", pageBreakInside: "avoid" }}
+                  >
+                    <div className="flex justify-between items-baseline">
+                      <h3 className="text-[10.5pt] font-bold text-[#0f172a]">
+                        {exp.role}
+                      </h3>
+                      <span className="text-[8.5pt] text-[#6b7280] font-medium">
+                        {exp.duration}
+                      </span>
+                    </div>
+                    <p
+                      className="text-[9pt] font-semibold mb-[4px]"
+                      style={{ color: themeColor }}
+                    >
+                      {exp.company}
+                    </p>
+                    {exp.bullets?.length > 0 && (
+                      <ul
+                        className="space-y-[3px] ml-[14px]"
+                        style={{ listStyleType: "disc" }}
+                      >
+                        {exp.bullets.map((b: string, j: number) => (
+                          <li
+                            key={j}
+                            className="text-[9pt] text-[#374151] leading-normal"
+                          >
+                            {b}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )
+        );
+      case "education":
+        return (
+          education.length > 0 && (
+            <section key="education">
+              <SectionTitle>Education</SectionTitle>
+              <div className="space-y-[8px]">
+                {education.map((edu: any, i: number) => (
+                  <div key={i} className="flex justify-between items-start">
+                    <div>
+                      <h3 className="text-[10pt] font-bold text-[#0f172a]">
+                        {edu.school}
+                      </h3>
+                      <p className="text-[9pt] text-[#4b5563]">
+                        {edu.degree}
+                        {edu.field ? `, ${edu.field}` : ""}
+                      </p>
+                      {edu.gpa && (
+                        <p className="text-[8.5pt] text-[#6b7280]">
+                          GPA: {edu.gpa}
+                        </p>
+                      )}
+                    </div>
+                    <span className="text-[9pt] text-[#6b7280] shrink-0 ml-4">
+                      {edu.year}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )
+        );
+      case "projects":
+        return (
+          projects.length > 0 && (
+            <section key="projects">
+              <SectionTitle>Projects</SectionTitle>
+              <div className="space-y-[8pt]">
+                {projects.map((proj: any, i: number) => (
+                  <div
+                    key={i}
+                    style={{ breakInside: "avoid", pageBreakInside: "avoid" }}
+                  >
+                    <div className="flex justify-between items-baseline">
+                      <h3 className="text-[10pt] font-bold text-[#0f172a]">
+                        {proj.title}
+                      </h3>
+                      <ResumeLink
+                        href={proj.link}
+                        className="text-[8pt] ml-2 shrink-0"
+                        style={{ color: themeColor }}
+                      />
+                    </div>
+                    {proj.techStack && (
+                      <p
+                        className="text-[8.5pt] font-semibold mb-[3px]"
+                        style={{ color: themeColor }}
+                      >
+                        {Array.isArray(proj.techStack)
+                          ? proj.techStack.join(" · ")
+                          : proj.techStack}
+                      </p>
+                    )}
+                    {proj.description && (
+                      <p className="text-[9pt] text-[#6b7280] mb-[3px]">
+                        {proj.description}
+                      </p>
+                    )}
+                    {proj.bullets?.length > 0 && (
+                      <ul
+                        className="space-y-[2px] ml-[14px]"
+                        style={{ listStyleType: "disc" }}
+                      >
+                        {proj.bullets.map((b: string, j: number) => (
+                          <li key={j} className="text-[8.5pt] text-[#374151]">
+                            {b}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )
+        );
+      case "skills":
+        return (
+          skills.length > 0 && (
+            <section key="skills">
+              <SectionTitle>Skills</SectionTitle>
+              <div className="space-y-[4px]">
+                {skills.map((skill: string, i: number) => (
+                  <div
+                    key={i}
+                    className="text-[9pt] text-[#374151] leading-[1.4]"
+                  >
+                    {skill.includes(":") ? (
+                      <>
+                        <span className="font-bold text-[#0f172a]">
+                          {skill.split(":")[0]}:
+                        </span>
+                        <span>{skill.split(":").slice(1).join(":")}</span>
+                      </>
+                    ) : (
+                      skill
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )
+        );
+      case "languages":
+        return (
+          languages.length > 0 && (
+            <section key="languages">
+              <SectionTitle>Languages</SectionTitle>
+              <div className="space-y-[4px]">
+                {languages.map((l: any, i: number) => (
+                  <div key={i} className="flex justify-between text-[9pt]">
+                    <span className="font-medium text-[#374151]">
+                      {l.language}
+                    </span>
+                    <span className="text-[#6b7280] italic">
+                      {l.proficiency}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )
+        );
+      case "certifications":
+        return (
+          certifications.length > 0 && (
+            <section key="certifications">
+              <SectionTitle>Certifications</SectionTitle>
+              <div className="space-y-[4px]">
+                {certifications.map((cert: any, i: number) => (
+                  <div key={i} className="flex justify-between">
+                    <div>
+                      <span className="text-[9.5pt] font-semibold text-[#1e293b]">
+                        {cert.name}
+                      </span>
+                      {cert.issuer && (
+                        <span className="text-[8.5pt] text-[#6b7280]">
+                          {" "}
+                          · {cert.issuer}
+                        </span>
+                      )}
+                    </div>
+                    {cert.date && (
+                      <span className="text-[8.5pt] text-[#9ca3af]">
+                        {cert.date}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )
+        );
+      case "customSections":
+        return (
+          customSections.length > 0 && (
+            <CustomSectionsBlock
+              key="customSections"
+              sections={customSections}
+              variant="vertical"
+              renderTitle={(title) => <SectionTitle>{title}</SectionTitle>}
+            />
+          )
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
-    <div className="p-[40pt] h-full flex flex-col font-serif bg-white text-[#1a1a1a]">
-      {/* HEADER - Top Alignment */}
-      <header className="mb-6 flex flex-col items-start gap-1">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900 leading-none">
-          {personalInfo.name || "YOUR NAME"}
-        </h1>
-        <div className="flex flex-wrap items-center gap-x-3 text-[11pt] text-gray-600">
-          {personalInfo.location && <span>{personalInfo.location}</span>}
-          {personalInfo.phone && <span>• {personalInfo.phone}</span>}
-          {personalInfo.email && <span className="underline decoration-gray-300 underline-offset-2">• {personalInfo.email}</span>}
-        </div>
-        <div className="flex gap-4 mt-1 text-[10pt] font-medium text-gray-500">
-          {personalInfo.linkedin && <span>LinkedIn</span>}
-          {personalInfo.portfolio && <span>Portfolio</span>}
-        </div>
-      </header>
-
-      {/* SUMMARY - Classic Border Top */}
-      {summary && (
-        <section className="mb-6 border-t-2 border-gray-900 pt-3">
-          <h2 className="text-sm font-black uppercase tracking-[0.2em] mb-2 text-gray-900">Professional Summary</h2>
-          <p className="text-[11pt] leading-normal text-gray-700 text-justify italic font-sans">{summary}</p>
-        </section>
-      )}
-
-      {/* EXPERIENCE - Main Body */}
-      {experience.length > 0 && (
-        <section className="mb-6 border-t border-gray-200 pt-3">
-          <h2 className="text-sm font-black uppercase tracking-[0.2em] mb-4 text-gray-900">Experience</h2>
-          <div className="space-y-6">
-            {experience.map((exp: any, i: number) => (
-              <div key={i} className="group">
-                <div className="flex justify-between items-baseline mb-1">
-                  <h3 className="font-bold text-[12pt] text-gray-900">{exp.company}</h3>
-                  <span className="text-[10pt] text-gray-600 font-medium italic">{exp.duration}</span>
-                </div>
-                <div className="text-[11pt] font-semibold text-gray-700 mb-2">{exp.role}</div>
-                <ul className="list-disc list-outside ml-5 space-y-1.5">
-                  {exp.bullets?.map((bullet: string, j: number) => (
-                    <li key={j} className="text-[10.5pt] text-gray-700 leading-snug pl-1">{bullet}</li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+    <div
+      className="min-h-full bg-white"
+      style={{ fontFamily: "'Georgia', 'Cambria', serif" }}
+    >
+      <div
+        style={{
+          zoom: scale,
+        }}
+        className="px-[54pt] py-[36pt] font-sans text-[#1a1a1a]"
+      >
+        {/* ── HEADER ── */}
+        <header className="text-center mb-[18pt]">
+          <h1
+            className="text-[22pt] font-extrabold tracking-tight text-[#111827] mb-[4px]"
+            style={{ fontFamily: "'Georgia', serif" }}
+          >
+            {personalInfo.name || "YOUR NAME"}
+          </h1>
+          {experience[0]?.role && (
+            <p
+              className="text-[10pt] font-semibold mb-[6px]"
+              style={{ color: themeColor }}
+            >
+              {experience[0].role}
+            </p>
+          )}
+          <div
+            className="flex flex-wrap justify-center gap-x-[12px] gap-y-[2px] text-[9pt] text-[#374151]"
+            style={{ fontFamily: "'Calibri', 'Inter', sans-serif" }}
+          >
+            {personalInfo.email && <span>{personalInfo.email}</span>}
+            {personalInfo.phone && <span>{personalInfo.phone}</span>}
+            {personalInfo.location && <span>{personalInfo.location}</span>}
+            {personalInfo.linkedin && (
+              <ResumeLink
+                href={personalInfo.linkedin}
+                className="font-semibold"
+                style={{ color: themeColor }}
+              >
+                {cleanUrl(personalInfo.linkedin) || "LinkedIn"}
+              </ResumeLink>
+            )}
+            {personalInfo.portfolio && (
+              <ResumeLink
+                href={personalInfo.portfolio}
+                className="font-semibold"
+                style={{ color: themeColor }}
+              >
+                {cleanUrl(personalInfo.portfolio) || "Portfolio"}
+              </ResumeLink>
+            )}
           </div>
-        </section>
-      )}
+          <div
+            className="border-b-2 mt-[10px]"
+            style={{ borderBottomColor: themeColor }}
+          />
+        </header>
 
-      <div className="grid grid-cols-12 gap-8 border-t border-gray-200 pt-3">
-        {/* LEFT COLUMN */}
-        <div className="col-span-8 space-y-6">
-          {/* PROJECTS */}
-          {projects.length > 0 && (
-            <section>
-              <h2 className="text-xs font-black uppercase tracking-[0.2em] mb-3 text-gray-900">Projects</h2>
-              <div className="space-y-4">
-                {projects.map((proj: any, i: number) => (
-                  <div key={i}>
-                    <div className="flex justify-between items-baseline mb-1">
-                      <h3 className="font-bold text-[11pt] text-gray-800">{proj.title}</h3>
-                      {proj.link && <span className="text-[9pt] underline text-gray-500">Link</span>}
-                    </div>
-                    <ul className="list-square list-outside ml-4 space-y-1">
-                      {proj.bullets?.slice(0, 2).map((bullet: string, j: number) => (
-                        <li key={j} className="text-[10pt] text-gray-600 leading-tight">{bullet}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* EDUCATION */}
-          {education.length > 0 && (
-            <section>
-              <h2 className="text-xs font-black uppercase tracking-[0.2em] mb-3 text-gray-900">Education</h2>
-              <div className="space-y-3">
-                {education.map((edu: any, i: number) => (
-                  <div key={i}>
-                    <div className="flex justify-between items-baseline">
-                      <h3 className="font-bold text-[11pt] text-gray-800">{edu.school}</h3>
-                      <span className="text-[10pt] text-gray-500">{edu.year}</span>
-                    </div>
-                    <p className="text-[10pt] text-gray-600 italic">{edu.degree}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-        </div>
-
-        {/* RIGHT COLUMN - Sidebar style for skills/certs */}
-        <div className="col-span-4 space-y-6">
-          {skills.length > 0 && (
-            <section>
-              <h2 className="text-xs font-black uppercase tracking-[0.2em] mb-3 text-gray-900">Expertise</h2>
-              <div className="flex flex-col gap-1.5">
-                {skills.map((skill: string, i: number) => (
-                  <div key={i} className="text-[10pt] text-gray-700 flex items-center gap-2">
-                    <div className="h-1 w-1 bg-gray-400 rounded-full" />
-                    {skill}
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {certifications.length > 0 && (
-            <section>
-              <h2 className="text-xs font-black uppercase tracking-[0.2em] mb-3 text-gray-900">Awards</h2>
-              <div className="space-y-3">
-                {certifications.map((cert: any, i: number) => (
-                  <div key={i}>
-                    <div className="font-bold text-[10pt] text-gray-800 leading-tight">{cert.name}</div>
-                    <div className="text-[9pt] text-gray-500">{cert.issuer}</div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {languages.length > 0 && (
-            <section>
-              <h2 className="text-xs font-black uppercase tracking-[0.2em] mb-3 text-gray-900">Languages</h2>
-              <div className="space-y-1">
-                {languages.map((lang: any, i: number) => (
-                  <div key={i} className="text-[10pt] text-gray-700">
-                    <span className="font-medium">{lang.language}</span>
-                    <span className="text-gray-400"> — {lang.proficiency}</span>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
+        <div
+          style={{ fontFamily: "'Calibri', 'Inter', sans-serif" }}
+          className="space-y-[12pt]"
+        >
+          {sectionOrder.map((id: string) => renderSection(id))}
         </div>
       </div>
     </div>

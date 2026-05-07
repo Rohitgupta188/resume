@@ -36,9 +36,14 @@ export interface IResume extends Document {
       link?: string;
       bullets: string[];
     }>;
+    /** User-defined custom sections e.g. Hobbies, Key Interests */
+    customSections?: Array<{
+      title: string;
+      items: string[];
+    }>;
+    themeColor?: string;
   };
   lastAiProcessedHash: string;
-  rawText?: string; 
   atsScore?: number;
   pdfUrl?: string;
   createdAt: Date;
@@ -59,7 +64,7 @@ const ResumeSchema: Schema = new Schema<IResume>(
     },
     templateId: {
       type: String,
-      enum: ["modern", "professional", "minimalist", "executive", "creative"],
+      enum: ["modern", "professional", "minimalist", "executive", "creative", "tech"],
       default: "modern",
     },
     content: {
@@ -71,7 +76,6 @@ const ResumeSchema: Schema = new Schema<IResume>(
       type: String,
       default: null,
     },
-    rawText: { type: String },
     atsScore: { type: Number, min: 0, max: 100 },
     pdfUrl: { type: String },
   },

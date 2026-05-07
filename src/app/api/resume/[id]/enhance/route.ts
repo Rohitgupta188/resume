@@ -214,6 +214,7 @@ export const POST = withAuth(async (req, { user, params }) => {
             resumeId: resume._id,
             contentHash: currentHash,
             atsScore: validAI.atsScore,
+            rubricBreakdown: validAI.rubricBreakdown,
             improvedContent: validAI.improvedContent,
             sectionFeedback: validAI.sectionFeedback,
             missingSkills: validAI.missingSkills,
@@ -245,6 +246,7 @@ export const POST = withAuth(async (req, { user, params }) => {
     return success({
       message: "Resume enhancement generated",
       atsScore: validAI.atsScore,
+      rubricBreakdown: validAI.rubricBreakdown,
       improvedContent: validAI.improvedContent,
       analysis: validAI,
       contentHash: currentHash

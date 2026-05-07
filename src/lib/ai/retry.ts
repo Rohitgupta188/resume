@@ -23,7 +23,9 @@ export async function generateWithRetry(
           try {
             const response = await fallbackFn();
             return { response, modelUsed: "gemini-2.5-flash-lite" };
-          } catch {}
+          } catch {
+            throw new Error("All retries failed");
+          }
         }
 
         const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;

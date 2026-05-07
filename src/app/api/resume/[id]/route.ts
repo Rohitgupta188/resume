@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { withAuth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db";
-
+import mongoose from "mongoose";
 import Resume from "@/models/Resume";
 import ResumeVersion from "@/models/ResumeVersion";
 import ResumeAnalysis from "@/models/ResumeAnalysis";
@@ -89,68 +89,98 @@ export const PATCH = withAuth(async (req, { user, params }) => {
       return validationError(parsed.error);
     }
 
-    const lastVersion = await ResumeVersion.findOne({ resumeId: id })
-      .sort({ versionNumber: -1 })
-      .select("versionNumber")
-      .lean();
+    const session = await mongoose.startSession();
+    session.startTransaction();
 
-    const nextVersion = lastVersion ? lastVersion.versionNumber + 1 : 1;
+    try {
+      if (parsed.data.createVersion) {
+        const lastVersion = await ResumeVersion.findOne({ resumeId: id })
+          .sort({ versionNumber: -1 })
+          .select("versionNumber")
+          .session(session)
+          .lean();
 
-    // Snapshot current content before applying update (for version history / rollback)
-    await ResumeVersion.create({
-      resumeId: id,
-      userId: user.sub,
-      content: result.resume.content,
-      versionNumber: nextVersion,
-      type: "manual",
-      changesSummary: "Snapshot before manual update",
-    });
+        const nextVersion = lastVersion ? lastVersion.versionNumber + 1 : 1;
 
-    const updatePayload: Record<string, unknown> = {
-      ...parsed.data,
-    };
+        // Snapshot current content before applying update
+        await ResumeVersion.create([{
+          resumeId: id,
+          userId: user.sub,
+          content: result.resume.content,
+          versionNumber: nextVersion,
+          type: "manual",
+          changesSummary: "Snapshot before manual update",
+        }], { session });
 
-    // Merge content: objects are shallow-merged, arrays are replaced entirely
-    // (so users can actually remove skills, experience entries, etc.)
-    if (parsed.data.content) {
-      const existing = result.resume.content || {};
-      const incoming = parsed.data.content;
+        // ✅ Version Growth Control: Keep latest 50 versions
+        const versionCount = await ResumeVersion.countDocuments({ resumeId: id }).session(session);
+        if (versionCount > 50) {
+          const oldestToKeep = await ResumeVersion.find({ resumeId: id })
+            .sort({ versionNumber: -1 })
+            .skip(49)
+            .limit(1)
+            .session(session)
+            .lean();
+          
+          if (oldestToKeep.length > 0) {
+            await ResumeVersion.deleteMany({
+              resumeId: id,
+              versionNumber: { $lt: oldestToKeep[0].versionNumber }
+            }).session(session);
+          }
+        }
+      }
 
-      updatePayload.content = {
-        ...existing,
-        ...incoming,
-        // For nested objects like personalInfo, shallow merge one level deeper
-        ...(incoming.personalInfo && {
-          personalInfo: { ...existing.personalInfo, ...incoming.personalInfo },
-        }),
+      const updatePayload: Record<string, unknown> = {
+        ...parsed.data,
       };
+
+      if (parsed.data.content) {
+        const existing = result.resume.content || {};
+        const incoming = parsed.data.content;
+
+        updatePayload.content = {
+          ...existing,
+          ...incoming,
+          ...(incoming.personalInfo && {
+            personalInfo: { ...existing.personalInfo, ...incoming.personalInfo },
+          }),
+        };
+      }
+
+      const updated = await Resume.findByIdAndUpdate(
+        id,
+        { $set: updatePayload },
+        { returnDocument: "after", runValidators: true, session },
+      ).lean();
+
+      if (!updated) {
+        throw new Error("Resume not found after update");
+      }
+
+      await session.commitTransaction();
+
+      //  Attach computed isActive
+      const userDoc = await User.findById(user.sub)
+        .select("activeResumeId")
+        .lean();
+
+      const isActive =
+        userDoc?.activeResumeId?.toString() === updated._id.toString();
+
+      return success({
+        message: "Resume updated successfully",
+        resume: {
+          ...updated,
+          isActive,
+        },
+      });
+    } catch (e) {
+      await session.abortTransaction();
+      throw e;
+    } finally {
+      session.endSession();
     }
-
-    const updated = await Resume.findByIdAndUpdate(
-      id,
-      { $set: updatePayload },
-      { returnDocument: "after", runValidators: true },
-    ).lean();
-
-    if (!updated) {
-      return notFound("Resume not found after update");
-    }
-
-    //  Attach computed isActive
-    const userDoc = await User.findById(user.sub)
-      .select("activeResumeId")
-      .lean();
-
-    const isActive =
-      userDoc?.activeResumeId?.toString() === updated._id.toString();
-
-    return success({
-      message: "Resume updated successfully",
-      resume: {
-        ...updated,
-        isActive,
-      },
-    });
   });
 });
 

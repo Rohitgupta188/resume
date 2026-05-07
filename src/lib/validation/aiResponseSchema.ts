@@ -2,6 +2,13 @@ import { z } from "zod";
 
 const aiResponseSchema = z.object({
   atsScore: z.number().min(0).max(100),
+  rubricBreakdown: z.object({
+    keywordRelevance: z.number().min(0).max(30),
+    impactQuantification: z.number().min(0).max(25),
+    writingQuality: z.number().min(0).max(20),
+    structureClarity: z.number().min(0).max(15),
+    projectRelevance: z.number().min(0).max(10),
+  }).optional(),
 
   improvedContent: z.object({
     summary: z.string().optional(),

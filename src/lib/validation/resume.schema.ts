@@ -78,6 +78,11 @@ export const languageEntrySchema = z.object({
   proficiency: z.string().trim().max(100).optional().or(z.literal("")),
 });
 
+export const customSectionSchema = z.object({
+  title: z.string().trim().min(1).max(100),
+  items: stringArraySchema,
+});
+
 export const resumeContentSchema = z.object({
   personalInfo: personalInfoSchema,
   summary: z
@@ -91,6 +96,9 @@ export const resumeContentSchema = z.object({
   projects: z.array(projectEntrySchema).default([]),
   certifications: z.array(certificationEntrySchema).default([]),
   languages: z.array(languageEntrySchema).default([]),
+  customSections: z.array(customSectionSchema).default([]),
+  themeColor: z.string().optional(),
+  fontSize: z.string().optional(),
 });
 
 export const createResumeSchema = z.object({
@@ -102,8 +110,6 @@ export const createResumeSchema = z.object({
 
   content: resumeContentSchema,
 
-  rawText: z.string().trim().optional(),
-
   atsScore: atsScoreSchema,
 
   pdfUrl: optionalUrlSchema,
@@ -114,6 +120,7 @@ export const updateResumeSchema = createResumeSchema
   .partial()
   .extend({
     content: resumeContentSchema.partial().optional(),
+    createVersion: z.boolean().optional(),
   });
 
 export type PersonalInfoInput = z.infer<typeof personalInfoSchema>;
@@ -122,6 +129,7 @@ export type ExperienceEntryInput = z.infer<typeof experienceEntrySchema>;
 export type ProjectEntryInput = z.infer<typeof projectEntrySchema>;
 export type CertificationEntryInput = z.infer<typeof certificationEntrySchema>;
 export type LanguageEntryInput = z.infer<typeof languageEntrySchema>;
+export type CustomSectionInput = z.infer<typeof customSectionSchema>;
 export type ResumeContentInput = z.infer<typeof resumeContentSchema>;
 export type CreateResumeInput = z.infer<typeof createResumeSchema>;
 export type UpdateResumeInput = z.infer<typeof updateResumeSchema>;

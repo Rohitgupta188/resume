@@ -10,7 +10,7 @@ export function normalizeAIResponse(data: any) {
       skills: Array.isArray(data.improvedContent?.skills)
         ? data.improvedContent.skills
         : typeof data.improvedContent?.skills === "string"
-        ? data.improvedContent.skills.split(",").map((s: string) => s.trim())
+        ? data.improvedContent.skills.split("\n").map((s: string) => s.trim()).filter(Boolean)
         : [],
 
       // Ensure projects array

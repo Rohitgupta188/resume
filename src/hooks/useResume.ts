@@ -3,7 +3,7 @@
 import { useCallback, useState } from "react";
 import { api, ApiError } from "@/lib/api-client";
 import { toast } from "sonner";
-import { updateResumeSchema } from "@/lib/validation";
+import { updateResumeSchema, resumeContentSchema } from "@/lib/validation";
 import { ZodError } from "zod";
 
 /* ═══════════════════════════════════════════════
@@ -23,8 +23,15 @@ interface ResumeListItem {
 
 interface ResumeDetail extends ResumeListItem {
   userId: string;
-  rawText?: string;
   pdfUrl?: string;
+}
+
+export interface ResumeVersionItem {
+  _id: string;
+  versionNumber: number;
+  type: "original" | "ai_improved" | "manual";
+  createdAt: string;
+  content: any;
 }
 
 export function useResumes() {
@@ -164,24 +171,6 @@ export function useResumeDetail() {
     [],
   );
 
-  const downloadPDF = useCallback(
-    async (id: string, title: string, templateId?: string) => {
-      const filename = `${title || "resume"}`
-        .toLowerCase()
-        .replace(/\s+/g, "-");
-      try {
-        toast.info("Preparing your PDF...");
-        const url = templateId
-          ? `/api/resume/${id}/pdf?templateId=${templateId}`
-          : `/api/resume/${id}/pdf`;
-        await api.download(url, `${filename}.pdf`);
-        toast.success("Download complete!");
-      } catch {
-        toast.error("Failed to download PDF");
-      }
-    },
-    [],
-  );
 
   const activateResume = useCallback(async (id: string) => {
     try {
@@ -224,6 +213,19 @@ export function useResumeDetail() {
       contentHash: string,
     ) => {
       // 1. Add contentHash here
+      
+      // Validate AI generated content before applying
+      // We use .partial() because the AI only returns a subset of the resume (e.g. summary, skills, projects)
+      const result = resumeContentSchema.partial().safeParse(improvedContent);
+      if (!result.success) {
+        const details = result.error.issues
+          .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
+          .join(", ");
+        toast.error(`AI generated invalid content: ${details}`, { id: "apply" });
+        console.error("AI content validation failed:", result.error.flatten());
+        throw new Error("Invalid AI content");
+      }
+
       try {
         toast.loading("Applying changes...", { id: "apply" });
 
@@ -251,6 +253,41 @@ export function useResumeDetail() {
     [],
   );
 
+  const fetchVersions = useCallback(async (id: string) => {
+    try {
+      const data = await api.get<{ versions: ResumeVersionItem[] }>(`/api/resume/${id}/versions`);
+      return data.versions;
+    } catch (err) {
+      const msg = err instanceof ApiError ? err.message : "Failed to fetch versions";
+      toast.error(msg);
+      throw err;
+    }
+  }, []);
+
+  const restoreVersion = useCallback(
+    async (resumeId: string, versionId: string) => {
+      try {
+        toast.loading("Restoring version...", { id: "restore" });
+        // 1. Fetch the specific version content
+        const data = await api.get<{ version: ResumeVersionItem }>(
+          `/api/resume/${resumeId}/versions/${versionId}`
+        );
+        
+        // 2. Update the resume with the old content
+        // This will automatically create a new version representing the restoration
+        const updatedResume = await updateResume(resumeId, { content: data.version.content });
+        
+        toast.success("Version restored successfully!", { id: "restore" });
+        return updatedResume;
+      } catch (err) {
+        const msg = err instanceof ApiError ? err.message : "Failed to restore version";
+        toast.error(msg, { id: "restore" });
+        throw err;
+      }
+    },
+    [updateResume]
+  );
+
   return {
     resume,
     isLoading,
@@ -259,9 +296,10 @@ export function useResumeDetail() {
     setResume,
     fetchResume,
     updateResume,
-    downloadPDF,
     activateResume,
     enhanceResume,
     applyEnhancement,
+    fetchVersions,
+    restoreVersion,
   };
 }

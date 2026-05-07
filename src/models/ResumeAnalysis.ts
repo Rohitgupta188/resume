@@ -1,11 +1,19 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
 
+export interface RubricBreakdown {
+  keywordRelevance: number;
+  impactQuantification: number;
+  writingQuality: number;
+  structureClarity: number;
+  projectRelevance: number;
+}
+
 export interface IResumeAnalysis extends Document {
   userId: mongoose.Types.ObjectId;
   resumeId: mongoose.Types.ObjectId;
 
   atsScore: number;
-
+  rubricBreakdown: RubricBreakdown;
   sectionFeedback: {
     summary?: string;
     education?: string;
@@ -49,6 +57,10 @@ const ResumeAnalysisSchema: Schema = new Schema<IResumeAnalysis>(
       required: true,
       min: 0,
       max: 100,
+    },
+
+    rubricBreakdown: {
+      type: Object,
     },
 
     sectionFeedback: {

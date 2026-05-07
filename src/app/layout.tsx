@@ -21,7 +21,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased dark`}>
+    <html lang="en" className={`${inter.variable} h-full antialiased dark`} data-scroll-behavior="smooth">
       <body className="min-h-screen bg-background text-foreground flex flex-col font-sans">
         <Providers>{children}</Providers>
       </body>

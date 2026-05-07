@@ -52,10 +52,16 @@ export interface ActiveResume {
 export function useJobMatch() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [matchingJobId, setMatchingJobId] = useState<string | null>(null);
   const [activeResume, setActiveResume] = useState<ActiveResume | null>(null);
   const [isFetchingResume, setIsFetchingResume] = useState(false);
   const [previousMatches, setPreviousMatches] = useState<MatchResult[]>([]);
+
+  // Pagination state
+  const [hasMore, setHasMore] = useState(false);
+  const [total, setTotal] = useState(0);
+  const [lastQuery, setLastQuery] = useState({ q: "", location: "" });
 
   /* ── Fetch active resume ── */
   const fetchActiveResume = useCallback(async () => {
@@ -78,13 +84,22 @@ export function useJobMatch() {
     if (!query.trim()) return;
     setIsSearching(true);
     setJobs([]);
+    setLastQuery({ q: query, location });
     try {
-      const params = new URLSearchParams({ q: query });
+      const params = new URLSearchParams({ q: query, skip: "0" });
       if (location.trim()) params.set("location", location.trim());
-      const data = await api.get<{ jobs: Job[]; source: string }>(
-        `/api/jobs/search?${params.toString()}`
-      );
+      
+      const data = await api.get<{ 
+        jobs: Job[]; 
+        hasMore: boolean; 
+        total: number; 
+        source: string 
+      }>(`/api/jobs/search?${params.toString()}`);
+      
       setJobs(data.jobs);
+      setHasMore(data.hasMore);
+      setTotal(data.total);
+      
       if (data.jobs.length === 0) {
         toast.info("No jobs found for that query. Try different keywords.");
       }
@@ -95,6 +110,37 @@ export function useJobMatch() {
       setIsSearching(false);
     }
   }, []);
+
+  /* ── Load more jobs ── */
+  const loadMoreJobs = useCallback(async () => {
+    if (isLoadingMore || !hasMore) return;
+    setIsLoadingMore(true);
+    try {
+      const params = new URLSearchParams({ 
+        q: lastQuery.q, 
+        skip: String(jobs.length) 
+      });
+      if (lastQuery.location.trim()) {
+        params.set("location", lastQuery.location.trim());
+      }
+      
+      const data = await api.get<{ 
+        jobs: Job[]; 
+        hasMore: boolean; 
+        total: number; 
+        source: string 
+      }>(`/api/jobs/search?${params.toString()}`);
+      
+      setJobs((prev) => [...prev, ...data.jobs]);
+      setHasMore(data.hasMore);
+      setTotal(data.total);
+    } catch (err) {
+      const msg = err instanceof ApiError ? err.message : "Failed to load more jobs";
+      toast.error(msg);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [jobs.length, lastQuery, hasMore, isLoadingMore]);
 
   /* ── Match resume against a job ── */
   const matchJob = useCallback(
@@ -139,12 +185,16 @@ export function useJobMatch() {
   return {
     jobs,
     isSearching,
+    isLoadingMore,
     matchingJobId,
     activeResume,
     isFetchingResume,
     previousMatches,
+    hasMore,
+    total,
     fetchActiveResume,
     searchJobs,
+    loadMoreJobs,
     matchJob,
     fetchMatches,
   };

@@ -30,9 +30,19 @@ interface EditorContextValue {
   setActiveSection: (section: string) => void;
   previewMode: "desktop" | "mobile";
   setPreviewMode: (mode: "desktop" | "mobile") => void;
+  moveSection: (sectionId: string, direction: "up" | "down") => void;
 
   //  AI Integration
   applyAIEnhancement: (content: any, score: number, hash: string) => Promise<any>;
+
+  // Error and Fetching
+  error: string | null;
+  fetchResume: (id: string) => Promise<any>;
+  hasChanges: boolean;
+  themeColor: string;
+  setThemeColor: (color: string) => void;
+  fontSize: string;
+  setFontSize: (size: string) => void;
 }
 
 const EditorContext = createContext<EditorContextValue | null>(null);
@@ -62,6 +72,7 @@ export function EditorProvider({
     applyEnhancement,
     isSaving,
     isLoading,
+    error,
   } = useResumeDetail();
 
   const [localResume, setLocalResume] = useState<any>(null);
@@ -120,6 +131,38 @@ export function EditorProvider({
   }, []);
 
   /* ─────────────────────────────────────────────
+     MOVE SECTION (REORDER)
+     ───────────────────────────────────────────── */
+  const moveSection = useCallback((sectionId: string, direction: "up" | "down") => {
+    setLocalResume((prev: any) => {
+      if (!prev) return prev;
+      const currentOrder = prev.content.sectionOrder || [
+        "summary", "experience", "education", "projects", "skills", "certifications", "languages", "customSections"
+      ];
+      
+      const idx = currentOrder.indexOf(sectionId);
+      if (idx === -1) return prev;
+
+      const newOrder = [...currentOrder];
+      const targetIdx = direction === "up" ? idx - 1 : idx + 1;
+      
+      if (targetIdx < 0 || targetIdx >= newOrder.length) return prev;
+
+      // Swap
+      [newOrder[idx], newOrder[targetIdx]] = [newOrder[targetIdx], newOrder[idx]];
+
+      return {
+        ...prev,
+        content: {
+          ...prev.content,
+          sectionOrder: newOrder
+        }
+      };
+    });
+    setHasChanges(true);
+  }, []);
+
+  /* ─────────────────────────────────────────────
      AUTO SAVE (DEBOUNCED)
      ───────────────────────────────────────────── */
   const debouncedSave = useRef(
@@ -154,6 +197,20 @@ export function EditorProvider({
   }, [debouncedSave]);
 
   /* ─────────────────────────────────────────────
+     UNSAVED WARNING
+     ───────────────────────────────────────────── */
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasChanges || isSaving) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [hasChanges, isSaving]);
+
+  /* ─────────────────────────────────────────────
      MANUAL SAVE
      ───────────────────────────────────────────── */
   const saveResume = useCallback(async () => {
@@ -163,10 +220,11 @@ export function EditorProvider({
       await updateResume(id, {
         content: localResume.content,
         templateId,
+        createVersion: true,
       });
 
       setHasChanges(false);
-      toast.success("All changes saved");
+      toast.success("All changes saved (Version created)");
     } catch {
       // handled in hook
     }
@@ -215,7 +273,15 @@ export function EditorProvider({
       setActiveSection,
       previewMode,
       setPreviewMode,
+      moveSection,
       applyAIEnhancement, //  exposed
+      error,
+      fetchResume,
+      hasChanges,
+      themeColor: localResume?.content?.themeColor || "#7c2d3e",
+      setThemeColor: (color: string) => setResumeContent((prev: any) => ({ ...prev, themeColor: color })),
+      fontSize: localResume?.content?.fontSize || "normal",
+      setFontSize: (size: string) => setResumeContent((prev: any) => ({ ...prev, fontSize: size })),
     }),
     [
       localResume,
@@ -227,7 +293,13 @@ export function EditorProvider({
       activateResume,
       activeSection,
       previewMode,
+      moveSection,
       applyAIEnhancement,
+      error,
+      fetchResume,
+      hasChanges,
+      localResume?.content?.themeColor,
+      localResume?.content?.fontSize,
     ]
   );
 

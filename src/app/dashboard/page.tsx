@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useResumes, useResumeDetail } from "@/hooks/useResume";
+import { useResumes } from "@/hooks/useResume";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,7 +64,6 @@ export default function DashboardPage() {
   const router = useRouter();
   const { user } = useAuth();
   const { resumes, isLoading, fetchResumes, createResume, deleteResume } = useResumes();
-  const { downloadPDF } = useResumeDetail();
 
   const [search, setSearch] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
@@ -289,7 +288,8 @@ export default function DashboardPage() {
                       className="h-7 w-7 rounded-lg shadow-sm"
                       onClick={(e) => {
                         e.stopPropagation();
-                        downloadPDF(resume._id, resume.title, resume.templateId);
+                        // Navigate to editor which has the print root — print triggers automatically
+                        router.push(`/editor/${resume._id}?print=1`);
                       }}
                     >
                       <Download className="h-3.5 w-3.5" />
