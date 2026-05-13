@@ -58,4 +58,25 @@ body {
   to { --angle: 360deg; }
 }
 
+.resume-page {
+  page-break-after: always;
+  break-after: page;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
 
+.resume-page:last-child {
+  page-break-after: auto;
+}
+
+@media print {
+  body {
+    background: white;
+  }
+
+  .resume-page {
+    margin: 0;
+    box-shadow: none;
+    width: 210mm;
+    min-height: 297mm;
+  }
+}

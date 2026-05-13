@@ -28,7 +28,7 @@ export const emailSchema = z
   .string()
   .trim()
   .toLowerCase()
-  .refine((val) => val === "" || z.string().email().safeParse(val).success, {
+  .refine((val) => val === "" || z.email().safeParse(val).success, {
     message: "Invalid email address",
   });
 

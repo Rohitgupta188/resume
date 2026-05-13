@@ -9,7 +9,13 @@ import { ResumeLink, cleanUrl } from "./resume-utils";
    Black and white only, 10pt/11pt sans-serif.
 ───────────────────────────────────────────────────────────── */
 
-export function MinimalistPreview({ content }: { content: any }) {
+export function MinimalistPreview({
+  content,
+  isPrint = false,
+}: {
+  content: any;
+  isPrint?: boolean;
+}) {
   const safeContent = content || {};
   const personalInfo = safeContent.personalInfo || {};
   const summary = safeContent.summary || "";
@@ -29,7 +35,10 @@ export function MinimalistPreview({ content }: { content: any }) {
   const scale = FONT_SCALES[safeContent.fontSize || "normal"] || 1;
 
   const SectionTitle = ({ children }: { children: React.ReactNode }) => (
-    <h2 className="text-[9.5pt] font-black uppercase tracking-[0.25em] text-[#111827] mb-[12px] pb-[4px] border-b border-[#e5e7eb]">
+    <h2
+      className="font-black uppercase tracking-[0.25em] text-[#111827] mb-[12px] pb-[2px] border-b border-[#e5e7eb]"
+      style={{ fontSize: `${10 * scale}pt` }}
+    >
       {children}
     </h2>
   );
@@ -51,7 +60,11 @@ export function MinimalistPreview({ content }: { content: any }) {
         return (
           summary && (
             <section key="summary">
-              <p className="text-[10pt] text-[#374151] leading-[1.7] max-w-[90%]">
+              <SectionTitle>Summary</SectionTitle>
+              <p
+                className="text-[#374151] leading-[1.65] font-bold"
+                style={{ fontSize: `${10.3 * scale}pt`, textAlign: "justify" }}
+              >
                 {summary}
               </p>
             </section>
@@ -64,30 +77,49 @@ export function MinimalistPreview({ content }: { content: any }) {
               <SectionTitle>Experience</SectionTitle>
               <div className="space-y-[16pt]">
                 {experience.map((exp: any, i: number) => (
-                  <div
-                    key={i}
-                    style={{ breakInside: "avoid", pageBreakInside: "avoid" }}
-                  >
+                  <div key={i} className="experience-item">
                     <div className="flex justify-between items-baseline mb-[2px]">
-                      <h3 className="text-[10.5pt] font-bold text-[#111827]">
+                      <h3
+                        className="font-bold text-[#111827]"
+                        style={{
+                          fontSize: `${11 * scale}pt`,
+                          textAlign: "justify",
+                        }}
+                      >
                         {exp.company}
                       </h3>
-                      <span className="text-[8.5pt] text-[#6b7280] font-mono tracking-tight">
+                      <span
+                        className="text-[#6b7280] font-mono tracking-tight"
+                        style={{
+                          fontSize: `${8.5 * scale}pt`,
+                          textAlign: "justify",
+                        }}
+                      >
                         {exp.duration}
                       </span>
                     </div>
-                    <p className="text-[9.5pt] italic text-[#4b5563] mb-[6px]">
+                    <p
+                      className="italic text-[#4b5563] mb-[6px]"
+                      style={{
+                        fontSize: `${10 * scale}pt`,
+                        textAlign: "justify",
+                      }}
+                    >
                       {exp.role}
                     </p>
                     {exp.bullets?.length > 0 && (
                       <ul
-                        className="space-y-[4px] ml-[14px]"
-                        style={{ listStyleType: "circle" }}
+                        className="space-y-[4px] ml-[20px]"
+                        style={{ listStyleType: "disc" }}
                       >
                         {exp.bullets.map((b: string, j: number) => (
                           <li
                             key={j}
-                            className="text-[9.5pt] text-[#374151] leading-normal pl-[4px]"
+                            className="text-[#374151] leading-normal pl-[4px]"
+                            style={{
+                              fontSize: `${9.5 * scale}pt`,
+                              textAlign: "justify",
+                            }}
                           >
                             {b}
                           </li>
@@ -109,38 +141,62 @@ export function MinimalistPreview({ content }: { content: any }) {
                 {projects.map((proj: any, i: number) => (
                   <div
                     key={i}
-                    style={{ breakInside: "avoid", pageBreakInside: "avoid" }}
+                    className="project-item pb-[10pt] border-b border-[#e5e7eb] last:border-b-0"
                   >
-                    <div className="flex justify-between items-baseline mb-[2px]">
-                      <h3 className="text-[10pt] font-bold text-[#111827]">
+                    <div className="flex justify-between items-baseline mb-[8px]">
+                      <h3
+                        className="font-bold text-[#111827]"
+                        style={{
+                          fontSize: `${11.3 * scale}pt`,
+                          textAlign: "justify",
+                        }}
+                      >
                         {proj.title}
                       </h3>
                       <ResumeLink
                         href={proj.link}
-                        className="text-[8.5pt] ml-2 shrink-0 text-[#6b7280]"
+                        className="ml-2 shrink-0 text-[#6b7280]"
+                        style={{
+                          fontSize: `${8.5 * scale}pt`,
+                          textAlign: "justify",
+                        }}
                       />
                     </div>
                     {proj.description && (
-                      <p className="text-[9.5pt] text-[#4b5563] mb-[4px] leading-normal">
+                      <p
+                        className="text-[#4b5563] mt-1 font-bold"
+                        style={{
+                          fontSize: `${10 * scale}pt`,
+                          textAlign: "justify",
+                        }}
+                      >
                         {proj.description}
                       </p>
                     )}
                     {proj.techStack && (
-                      <p className="text-[8.5pt] font-medium text-[#6b7280]">
-                        {Array.isArray(proj.techStack)
-                          ? proj.techStack.join(" • ")
-                          : proj.techStack}
+                      <p
+                        className="font-semibold mt-[2px]"
+                        style={{
+                          color: "text-[#4b5563]",
+                          fontSize: `${8 * scale}pt`,
+                        }}
+                      >
+                        {proj.techStack}
                       </p>
                     )}
                     {proj.bullets?.length > 0 && (
                       <ul
-                        className="mt-[4px] space-y-[2px] ml-[14px]"
-                        style={{ listStyleType: "circle" }}
+                        className="mt-[8px] space-y-[10px] ml-[20px]"
+                        style={{ listStyleType: "disc" }}
                       >
                         {proj.bullets.map((b: string, j: number) => (
                           <li
                             key={j}
-                            className="text-[9pt] text-[#374151] leading-normal"
+                            className="text-[#374151] leading-normal "
+                            style={{
+                              fontSize: `${9.5 * scale}pt`,
+                              textAlign: "justify",
+                            }}
                           >
                             {b}
                           </li>
@@ -161,14 +217,32 @@ export function MinimalistPreview({ content }: { content: any }) {
               <div className="space-y-[10pt]">
                 {education.map((edu: any, i: number) => (
                   <div key={i}>
-                    <h3 className="text-[10pt] font-bold text-[#111827] mb-[2px]">
+                    <h3
+                      className="font-bold text-[#111827] mb-[2px] education-item"
+                      style={{
+                        fontSize: `${11 * scale}pt`,
+                        textAlign: "justify",
+                      }}
+                    >
                       {edu.school}
                     </h3>
-                    <p className="text-[9.5pt] text-[#4b5563]">
+                    <p
+                      className="text-[#4b5563]"
+                      style={{
+                        fontSize: `${10 * scale}pt`,
+                        textAlign: "justify",
+                      }}
+                    >
                       {edu.degree}
                       {edu.field ? `, ${edu.field}` : ""}
                     </p>
-                    <p className="text-[8.5pt] text-[#6b7280] mt-[2px]">
+                    <p
+                      className="text-[#6b7280] mt-[2px]"
+                      style={{
+                        fontSize: `${8.5 * scale}pt`,
+                        textAlign: "justify",
+                      }}
+                    >
                       {edu.year}
                       {edu.gpa ? ` • GPA: ${edu.gpa}` : ""}
                     </p>
@@ -187,7 +261,11 @@ export function MinimalistPreview({ content }: { content: any }) {
                 {skills.map((skill: string, i: number) => (
                   <div
                     key={i}
-                    className="text-[9.5pt] text-[#374151] leading-tight"
+                    className="text-[#374151] leading-tight"
+                    style={{
+                      fontSize: `${9.5 * scale}pt`,
+                      textAlign: "justify",
+                    }}
                   >
                     {skill.includes(":") ? (
                       <>
@@ -212,7 +290,14 @@ export function MinimalistPreview({ content }: { content: any }) {
               <SectionTitle>Languages</SectionTitle>
               <div className="space-y-[4px]">
                 {languages.map((l: any, i: number) => (
-                  <div key={i} className="flex justify-between text-[9.5pt]">
+                  <div
+                    key={i}
+                    className="flex justify-between"
+                    style={{
+                      fontSize: `${9.5 * scale}pt`,
+                      textAlign: "justify",
+                    }}
+                  >
                     <span className="text-[#111827]">{l.language}</span>
                     <span className="text-[#6b7280] italic">
                       {l.proficiency}
@@ -231,10 +316,22 @@ export function MinimalistPreview({ content }: { content: any }) {
               <div className="grid grid-cols-2 gap-[12pt]">
                 {certifications.map((cert: any, i: number) => (
                   <div key={i}>
-                    <p className="text-[9.5pt] font-bold text-[#111827]">
+                    <p
+                      className="font-bold text-[#111827]"
+                      style={{
+                        fontSize: `${9.5 * scale}pt`,
+                        textAlign: "justify",
+                      }}
+                    >
                       {cert.name}
                     </p>
-                    <p className="text-[8.5pt] text-[#6b7280] mt-[2px]">
+                    <p
+                      className="text-[#6b7280] mt-[2px]"
+                      style={{
+                        fontSize: `${8.5 * scale}pt`,
+                        textAlign: "justify",
+                      }}
+                    >
                       {cert.issuer}
                       {cert.date ? ` • ${cert.date}` : ""}
                     </p>
@@ -262,21 +359,34 @@ export function MinimalistPreview({ content }: { content: any }) {
 
   return (
     <div
-      className="min-h-full bg-white"
-      style={{ fontFamily: "'Inter', sans-serif" }}
+      className={`bg-[#f3f4f6] flex flex-col items-center ${
+        isPrint ? "" : "py-6"
+      }`}
+      style={{ zoom: isPrint ? 1 : undefined }}
     >
       <div
+        className="resume-page bg-white text-[#1f2937]"
         style={{
-          zoom: scale,
+          width: "210mm",
+          minHeight: isPrint ? "unset" : "297mm",
+          padding: "16pt 34pt",
+          background: "white",
+          boxSizing: "border-box",
+          overflow: "visible",
         }}
-        className="px-[54pt] py-[36pt] text-[#1f2937]"
       >
         {/* ── HEADER ── */}
         <header className="mb-[24pt]">
-          <h1 className="text-[26pt] font-black tracking-tight text-[#000000] mb-[8px] leading-none uppercase">
+          <h1
+            className="font-black tracking-tight text-[#000000] mb-[8px] leading-none uppercase"
+            style={{ fontSize: `${26 * scale}pt` }}
+          >
             {personalInfo.name || "YOUR NAME"}
           </h1>
-          <div className="flex flex-wrap gap-x-[16px] gap-y-[4px] text-[8.5pt] text-[#4b5563]">
+          <div
+            className="flex flex-wrap gap-x-[16px] gap-y-[4px] text-[#4b5563]"
+            style={{ fontSize: `${8.5 * scale}pt` }}
+          >
             {personalInfo.location && <span>{personalInfo.location}</span>}
             {personalInfo.email && <span>{personalInfo.email}</span>}
             {personalInfo.phone && <span>{personalInfo.phone}</span>}
@@ -284,6 +394,7 @@ export function MinimalistPreview({ content }: { content: any }) {
               <ResumeLink
                 href={personalInfo.linkedin}
                 className="font-bold text-[#111827]"
+                style={{ fontSize: `${8.5 * scale}pt` }}
               >
                 {cleanUrl(personalInfo.linkedin) || "LinkedIn"}
               </ResumeLink>
@@ -292,6 +403,7 @@ export function MinimalistPreview({ content }: { content: any }) {
               <ResumeLink
                 href={personalInfo.portfolio}
                 className="font-bold text-[#111827]"
+                style={{ fontSize: `${8.5 * scale}pt` }}
               >
                 {cleanUrl(personalInfo.portfolio) || "Portfolio"}
               </ResumeLink>

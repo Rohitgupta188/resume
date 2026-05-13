@@ -81,7 +81,7 @@ export function Navbar() {
               {/* User menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-2 rounded-xl border border-border/60 bg-card px-3 py-1.5 text-sm font-medium hover:bg-accent transition-colors duration-200 focus:outline-none">
+                  <button className="flex items-center gap-2 rounded-xl border border-border/60 bg-slate-00/50 px-3 py-1.5 text-sm font-medium hover:bg-slate-900 transition-colors duration-200 focus:outline-none">
                     <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-[10px] font-black">
                       {initials}
                     </div>
@@ -91,7 +91,7 @@ export function Navbar() {
                     <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 mt-1">
+                <DropdownMenuContent align="end" className="w-56 mt-1 bg-black border-slate-900 shadow-2xl">
                   <DropdownMenuLabel>
                     <div className="flex flex-col space-y-0.5">
                       <p className="text-sm font-semibold">{user?.username}</p>

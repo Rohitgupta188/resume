@@ -3,11 +3,9 @@
 import React from "react";
 import { motion } from "framer-motion";
 import {
-  X,
+
   Lightbulb,
-  CheckCircle2,
-  XCircle,
-  ChevronRight,
+
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
@@ -41,11 +39,7 @@ function SkillChip({
           : "bg-red-50 border-red-200 text-red-600 dark:bg-red-950 dark:border-red-900 dark:text-red-400"
       )}
     >
-      {matched ? (
-        <CheckCircle2 className="w-3 h-3 shrink-0" />
-      ) : (
-        <XCircle className="w-3 h-3 shrink-0" />
-      )}
+
       {label}
     </span>
   );
@@ -132,17 +126,6 @@ export function MatchPanel({
                 {job.company}
               </p>
             </div>
-
-            <button
-              onClick={onClose}
-              className={cn(
-                "w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5",
-                "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400",
-                "hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
-              )}
-            >
-              <X className="w-4 h-4" />
-            </button>
           </div>
 
           <div className="flex justify-center py-2">
@@ -214,23 +197,7 @@ export function MatchPanel({
           <div className="h-6" />
         </div>
 
-        {/* ── Footer ─────────────────────────────────────────── */}
-        <div className="px-6 py-4 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between bg-white dark:bg-zinc-950">
-          <p className="text-[12px] text-zinc-400">
-            Based on your current resume
-          </p>
-          <button
-            className={cn(
-              "inline-flex items-center gap-1.5 px-4 py-2 rounded-lg",
-              "bg-zinc-900 dark:bg-white text-white dark:text-zinc-900",
-              "text-[13px] font-medium",
-              "hover:bg-zinc-700 dark:hover:bg-zinc-100 transition-colors"
-            )}
-          >
-            Improve resume
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
+
       </SheetContent>
     </Sheet>
   );

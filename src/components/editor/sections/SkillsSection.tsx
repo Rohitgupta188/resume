@@ -52,12 +52,12 @@ export function SkillsSection() {
             <Badge 
               key={index} 
               variant="secondary" 
-              className="py-1.5 pl-3 pr-1 text-sm rounded-lg flex items-center gap-1 group bg-card border hover:bg-accent transition-colors"
+              className="py-1.5 pl-3 pr-1 text-sm rounded-lg flex items-center gap-1 group bg-card border hover:bg-accent transition-colors max-w-full"
             >
-              {skill}
+              <span className="truncate ">{skill}</span>
               <button 
                 onClick={() => removeSkill(skill)}
-                className="h-5 w-5 rounded-md flex items-center justify-center hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors"
+                className="h-5 w-5 shrink-0 rounded-md flex items-center justify-center hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors"
               >
                 <X className="h-3 w-3" />
               </button>
@@ -66,10 +66,6 @@ export function SkillsSection() {
         )}
       </div>
 
-      <div className="flex items-center justify-center gap-2 py-2 border rounded-xl bg-primary/5 border-primary/20 cursor-pointer hover:bg-primary/10 transition-colors group">
-         <Sparkles className="h-3.5 w-3.5 text-primary group-hover:scale-125 transition-transform" />
-         <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Suggest skills based on my experience</span>
-      </div>
     </div>
   );
 }

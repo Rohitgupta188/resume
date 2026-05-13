@@ -78,7 +78,7 @@ export function EditorToolbar() {
     if (resume) {
       if (!resume.isActive) {
         toast.error(
-          "Please set this resume as 'Active' first to use AI Enhance features."
+          "Please set this resume as 'Active' first to use AI Enhance features.",
         );
         return;
       }
@@ -102,7 +102,7 @@ export function EditorToolbar() {
       await applyAIEnhancement(
         data.improvedContent,
         data.atsScore,
-        data.contentHash
+        data.contentHash,
       );
       setIsEnhanceOpen(false);
       setEnhanceData(null);
@@ -136,7 +136,7 @@ export function EditorToolbar() {
     try {
       await restoreVersion(resume._id, versionId);
       setIsHistoryOpen(false);
-      window.location.reload(); 
+      window.location.reload();
     } catch (err) {
       console.error(err);
     }
@@ -145,15 +145,18 @@ export function EditorToolbar() {
   /* ─────────────────────────────────────────────
      HELPER COMPONENTS
      ───────────────────────────────────────────── */
-  
+
   const ColorPicker = ({ showLabel = false }: { showLabel?: boolean }) => {
     const { themeColor, setThemeColor } = useEditor();
 
     const colorGroups = [
-      { label: "Professional", colors: ["#1f2937", "#374151", "#1e3a5f", "#7c2d3e"] },
-      { label: "Cool",         colors: ["#2563eb", "#0891b2", "#059669", "#7c3aed"] },
-      { label: "Warm",         colors: ["#dc2626", "#d97706", "#ea580c", "#db2777"] },
-      { label: "Modern",       colors: ["#6366f1", "#8b5cf6", "#0d9488", "#4f46e5"] },
+      {
+        label: "Professional",
+        colors: ["#1f2937", "#374151", "#1e3a5f", "#7c2d3e"],
+      },
+      { label: "Cool", colors: ["#2563eb", "#0891b2", "#059669", "#7c3aed"] },
+      { label: "Warm", colors: ["#dc2626", "#d97706", "#ea580c", "#db2777"] },
+      { label: "Modern", colors: ["#6366f1", "#8b5cf6", "#0d9488", "#4f46e5"] },
     ];
 
     return (
@@ -172,19 +175,33 @@ export function EditorToolbar() {
               />
             </div>
             {showLabel ? (
-              <span className="text-[10px] font-bold uppercase tracking-tight">Color</span>
+              <span className="text-[10px] font-bold uppercase tracking-tight">
+                Color
+              </span>
             ) : (
-              <span className="hidden xl:inline text-[10px] font-bold uppercase tracking-tight">Color</span>
+              <span className="hidden xl:inline text-[10px] font-bold uppercase tracking-tight">
+                Color
+              </span>
             )}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="center" className="p-0 w-[220px] bg-card text-card-foreground border-border shadow-xl">
+        <DropdownMenuContent
+          align="center"
+          className="p-0 w-[220px] bg-card text-card-foreground border-border shadow-xl"
+        >
           {/* Header with live swatch */}
           <div className="px-3 pt-3 pb-2 flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Theme Color</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              Theme Color
+            </span>
             <div className="flex items-center gap-1.5">
-              <span className="font-mono text-[9px] text-muted-foreground uppercase">{themeColor}</span>
-              <span className="h-4 w-4 rounded-md border border-border shadow-sm" style={{ backgroundColor: themeColor }} />
+              <span className="font-mono text-[9px] text-muted-foreground uppercase">
+                {themeColor}
+              </span>
+              <span
+                className="h-4 w-4 rounded-md border border-border shadow-sm"
+                style={{ backgroundColor: themeColor }}
+              />
             </div>
           </div>
           <DropdownMenuSeparator />
@@ -193,7 +210,9 @@ export function EditorToolbar() {
           <div className="px-3 py-2 space-y-2.5">
             {colorGroups.map((group) => (
               <div key={group.label}>
-                <p className="text-[9px] font-semibold text-muted-foreground/60 uppercase tracking-wider mb-1.5">{group.label}</p>
+                <p className="text-[9px] font-semibold text-muted-foreground/60 uppercase tracking-wider mb-1.5">
+                  {group.label}
+                </p>
                 <div className="flex gap-1.5">
                   {group.colors.map((c) => (
                     <button
@@ -225,11 +244,15 @@ export function EditorToolbar() {
               <input
                 type="color"
                 value={themeColor}
-                onInput={(e) => setThemeColor((e.target as HTMLInputElement).value)}
+                onInput={(e) =>
+                  setThemeColor((e.target as HTMLInputElement).value)
+                }
                 className="absolute inset-[-5px] w-[150%] h-[150%] cursor-pointer"
               />
             </div>
-            <span className="text-[10px] text-muted-foreground">Pick custom color</span>
+            <span className="text-[10px] text-muted-foreground">
+              Pick custom color
+            </span>
           </div>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -239,9 +262,24 @@ export function EditorToolbar() {
   const FontSizePicker = ({ showLabel = false }: { showLabel?: boolean }) => {
     const { fontSize, setFontSize } = useEditor();
     const sizes = [
-      { id: "small",  label: "Small",  desc: "Compact & dense",   textClass: "text-[11px]" },
-      { id: "normal", label: "Normal", desc: "Balanced (default)", textClass: "text-[13px]" },
-      { id: "large",  label: "Large",  desc: "Easy to read",      textClass: "text-[15px]" },
+      {
+        id: "small",
+        label: "Small",
+        desc: "Compact & dense",
+        textClass: "text-[11px]",
+      },
+      {
+        id: "normal",
+        label: "Normal",
+        desc: "Balanced (default)",
+        textClass: "text-[13px]",
+      },
+      {
+        id: "large",
+        label: "Large",
+        desc: "Easy to read",
+        textClass: "text-[15px]",
+      },
     ];
 
     return (
@@ -259,14 +297,23 @@ export function EditorToolbar() {
               </span>
             ) : (
               <span className="hidden xl:inline text-[10px] font-bold uppercase tracking-tight">
-                {fontSize === "small" ? "Small" : fontSize === "large" ? "Large" : "Normal"}
+                {fontSize === "small"
+                  ? "Small"
+                  : fontSize === "large"
+                    ? "Large"
+                    : "Normal"}
               </span>
             )}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="center" className="w-[200px] p-0 bg-slate-900 text-slate-100 border-slate-800 shadow-xl">
+        <DropdownMenuContent
+          align="center"
+          className="w-[200px] p-0 bg-slate-900 text-slate-100 border-slate-800 shadow-xl"
+        >
           <div className="px-3 pt-3 pb-1.5">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Font Size</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              Font Size
+            </span>
           </div>
           <DropdownMenuSeparator className="bg-slate-800" />
           <div className="p-1.5">
@@ -281,12 +328,20 @@ export function EditorToolbar() {
                 }`}
               >
                 {/* Visual Aa indicator */}
-                <span className={`${s.textClass} font-bold w-7 text-center shrink-0`}>
+                <span
+                  className={`${s.textClass} font-bold w-7 text-center shrink-0`}
+                >
                   Aa
                 </span>
                 <div className="flex-1 text-left min-w-0">
-                  <p className={`text-xs font-semibold ${fontSize === s.id ? "text-primary" : ""}`}>{s.label}</p>
-                  <p className="text-[10px] text-muted-foreground leading-tight">{s.desc}</p>
+                  <p
+                    className={`text-xs font-semibold ${fontSize === s.id ? "text-primary" : ""}`}
+                  >
+                    {s.label}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground leading-tight">
+                    {s.desc}
+                  </p>
                 </div>
                 {fontSize === s.id && (
                   <Check className="h-3.5 w-3.5 text-primary shrink-0" />
@@ -304,28 +359,39 @@ export function EditorToolbar() {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-      <Button 
-        variant="ghost" 
-        size="sm" 
-        className={`h-8 gap-1.5 ${showLabel ? "px-2.5 w-auto" : "w-8 p-0 xl:w-auto xl:px-2.5"}`}
-      >
-        <LayoutGrid className="h-3.5 w-3.5 text-slate-500" />
-        {showLabel ? (
-          <span className="text-[10px] font-bold uppercase tracking-tight">Template</span>
-        ) : (
-          <span className="hidden xl:inline text-[10px] font-bold uppercase tracking-tight text-slate-600">Template</span>
-        )}
-      </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`h-8 gap-1.5 ${showLabel ? "px-2.5 w-auto" : "w-8 p-0 xl:w-auto xl:px-2.5"}`}
+          >
+            <LayoutGrid className="h-3.5 w-3.5 text-slate-500" />
+            {showLabel ? (
+              <span className="text-[10px] font-bold uppercase tracking-tight">
+                Template
+              </span>
+            ) : (
+              <span className="hidden xl:inline text-[10px] font-bold uppercase tracking-tight text-slate-600">
+                Template
+              </span>
+            )}
+          </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56 bg-slate-900 text-slate-100 border-slate-800 shadow-xl">
-          <DropdownMenuLabel className="text-slate-400 font-bold uppercase text-[10px] tracking-widest px-3 py-2">Templates</DropdownMenuLabel>
+        <DropdownMenuContent
+          align="end"
+          className="w-56 bg-slate-900 text-slate-100 border-slate-800 shadow-xl"
+        >
+          <DropdownMenuLabel className="text-slate-400 font-bold uppercase text-[10px] tracking-widest px-3 py-2">
+            Templates
+          </DropdownMenuLabel>
           <DropdownMenuSeparator className="bg-slate-800" />
           {Object.entries(RESUME_TEMPLATES).map(([id, config]) => (
             <DropdownMenuItem
               key={id}
               onClick={() => setTemplateId(id)}
               className={`cursor-pointer transition-colors px-3 py-2 focus:bg-slate-800 focus:text-white ${
-                templateId === id ? "bg-slate-800 text-primary font-bold" : "hover:bg-slate-800"
+                templateId === id
+                  ? "bg-slate-800 text-primary font-bold"
+                  : "hover:bg-slate-800"
               }`}
             >
               {config.name}
@@ -342,32 +408,36 @@ export function EditorToolbar() {
       <div className="h-14 border-b bg-card flex items-center justify-between px-3 sm:px-6">
         <div className="flex items-center gap-1.5 sm:gap-2">
           <Link href="/dashboard">
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 rounded-full"
+            >
               <ChevronLeft className="h-5 w-5" />
             </Button>
           </Link>
-          
+
           <div className="h-4 w-px bg-border mx-0.5 sm:mx-1" />
-          
+
           <div className="flex items-center bg-muted/50 rounded-lg p-0.5 border border-border/50">
-             <Button
-               variant={previewMode === "desktop" ? "secondary" : "ghost"}
-               size="sm"
-               className="h-7 w-7 sm:w-8 p-0"
-               onClick={() => setPreviewMode("desktop")}
-               title="Desktop View"
-             >
-               <Monitor className="h-3.5 w-3.5" />
-             </Button>
-             <Button
-               variant={previewMode === "mobile" ? "secondary" : "ghost"}
-               size="sm"
-               className="h-7 w-7 sm:w-8 p-0"
-               onClick={() => setPreviewMode("mobile")}
-               title="Mobile View"
-             >
-               <Smartphone className="h-3.5 w-3.5" />
-             </Button>
+            <Button
+              variant={previewMode === "desktop" ? "secondary" : "ghost"}
+              size="sm"
+              className="h-7 w-7 sm:w-8 p-0"
+              onClick={() => setPreviewMode("desktop")}
+              title="Desktop View"
+            >
+              <Monitor className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant={previewMode === "mobile" ? "secondary" : "ghost"}
+              size="sm"
+              className="h-7 w-7 sm:w-8 p-0"
+              onClick={() => setPreviewMode("mobile")}
+              title="Mobile View"
+            >
+              <Smartphone className="h-3.5 w-3.5" />
+            </Button>
           </div>
 
           <div className="h-4 w-px bg-border mx-0.5 sm:mx-1" />
@@ -376,7 +446,9 @@ export function EditorToolbar() {
             {isSaving ? (
               <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-blue-50 text-blue-500 border border-blue-100">
                 <div className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
-                <span className="text-[9px] font-black uppercase tracking-widest hidden xs:inline">Sync</span>
+                <span className="text-[9px] font-black uppercase tracking-widest hidden xs:inline">
+                  Sync
+                </span>
               </div>
             ) : hasChanges ? (
               <Button
@@ -387,16 +459,23 @@ export function EditorToolbar() {
                 title="Create Snapshot"
               >
                 <CloudIcon className="h-3.5 w-3.5" />
-                <span className="text-[9px] font-black uppercase tracking-widest hidden xs:inline">Snapshot</span>
+                <span className="text-[9px] font-black uppercase tracking-widest hidden xs:inline">
+                  Snapshot
+                </span>
               </Button>
             ) : (
-              <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-green-50 text-green-600 border border-green-100" title="Autosaved">
+              <div
+                className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-green-50 text-green-600 border border-green-100"
+                title="Autosaved"
+              >
                 <Check className="h-3.5 w-3.5" />
-                <span className="text-[9px] font-black uppercase tracking-widest hidden xs:inline">Saved</span>
+                <span className="text-[9px] font-black uppercase tracking-widest hidden xs:inline">
+                  Saved
+                </span>
               </div>
             )}
           </div>
-          
+
           <h1 className="font-bold text-xs truncate max-w-[80px] sm:max-w-[180px] ml-1 hidden lg:block">
             {resume?.title || "Resume"}
           </h1>
@@ -424,7 +503,9 @@ export function EditorToolbar() {
               title="Job Match"
             >
               <Briefcase className="h-4 w-4 text-slate-500" />
-              <span className="hidden xl:inline text-xs font-bold uppercase tracking-wider">Match</span>
+              <span className="hidden xl:inline text-xs font-bold uppercase tracking-wider">
+                Match
+              </span>
             </Button>
           </Link>
 
@@ -436,7 +517,9 @@ export function EditorToolbar() {
             title="Snapshots History"
           >
             <History className="h-4 w-4 text-slate-500" />
-            <span className="hidden xl:inline text-xs font-bold uppercase tracking-wider">History</span>
+            <span className="hidden xl:inline text-xs font-bold uppercase tracking-wider">
+              History
+            </span>
           </Button>
 
           {/* ── Set Active / Active Button ── */}
@@ -446,7 +529,9 @@ export function EditorToolbar() {
               title="This is your active resume"
             >
               <Zap className="h-3.5 w-3.5 text-emerald-500 fill-emerald-500" />
-              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Active</span>
+              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                Active
+              </span>
             </div>
           ) : (
             <Button
@@ -457,7 +542,9 @@ export function EditorToolbar() {
               title="Set as active resume for AI features"
             >
               <Zap className="h-3.5 w-3.5" />
-              <span className="text-[10px] font-black uppercase tracking-wider">Set Active</span>
+              <span className="text-[10px] font-black uppercase tracking-wider">
+                Set Active
+              </span>
             </Button>
           )}
 
@@ -471,7 +558,9 @@ export function EditorToolbar() {
             title="AI Enhance"
           >
             <Sparkles className="h-4 w-4" />
-            <span className="hidden md:inline text-xs font-bold uppercase tracking-wider">Enhance</span>
+            <span className="hidden md:inline text-xs font-bold uppercase tracking-wider">
+              Enhance
+            </span>
           </Button>
 
           <Button
@@ -481,36 +570,42 @@ export function EditorToolbar() {
             title="Download PDF"
           >
             <Download className="h-4 w-4" />
-            <span className="hidden xs:inline text-xs font-bold uppercase tracking-wider">Download</span>
+            <span className="hidden xs:inline text-xs font-bold uppercase tracking-wider">
+              Download
+            </span>
           </Button>
         </div>
       </div>
 
       {/* SECONDARY ROW (Mobile Only) */}
       <div className="h-9 md:hidden border-b bg-muted/40 flex items-center justify-between px-1 overflow-hidden">
-          <div className="flex items-center gap-0.5">
-            <ColorPicker showLabel />
-            <div className="h-3 w-px bg-border/60 shrink-0" />
-            <FontSizePicker showLabel />
-            <div className="h-3 w-px bg-border/60 shrink-0" />
-            <TemplateSelector showLabel />
-          </div>
-          <div className="sm:hidden">
-            {resume?.isActive ? (
-              <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-500/10">
-                <Zap className="h-3 w-3 text-emerald-500 fill-emerald-500" />
-                <span className="text-[9px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Active</span>
-              </div>
-            ) : (
-              <button
-                onClick={handleActivate}
-                className="flex items-center gap-1 px-2 py-1 rounded-md bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 transition-colors"
-              >
-                <Zap className="h-3 w-3 text-amber-500" />
-                <span className="text-[9px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400">Set Active</span>
-              </button>
-            )}
-          </div>
+        <div className="flex items-center gap-0.5">
+          <ColorPicker showLabel />
+          <div className="h-3 w-px bg-border/60 shrink-0" />
+          <FontSizePicker showLabel />
+          <div className="h-3 w-px bg-border/60 shrink-0" />
+          <TemplateSelector showLabel />
+        </div>
+        <div className="sm:hidden">
+          {resume?.isActive ? (
+            <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-500/10">
+              <Zap className="h-3 w-3 text-emerald-500 fill-emerald-500" />
+              <span className="text-[9px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                Active
+              </span>
+            </div>
+          ) : (
+            <button
+              onClick={handleActivate}
+              className="flex items-center gap-1 px-2 py-1 rounded-md bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 transition-colors"
+            >
+              <Zap className="h-3 w-3 text-amber-500" />
+              <span className="text-[9px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                Set Active
+              </span>
+            </button>
+          )}
+        </div>
       </div>
 
       <EnhanceModal

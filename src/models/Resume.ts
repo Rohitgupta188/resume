@@ -32,7 +32,7 @@ export interface IResume extends Document {
     projects: Array<{
       title: string;
       description: string;
-      techStack: string[];
+      techStack?: string;
       link?: string;
       bullets: string[];
     }>;

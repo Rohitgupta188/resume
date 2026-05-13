@@ -21,7 +21,7 @@ import type { ComponentType } from "react";
 export interface TemplateConfig {
   id: string;
   name: string;
-  component: ComponentType<{ content: any }>;
+  component: ComponentType<{ content: any; isPrint?: boolean }>;
 }
 
 export const RESUME_TEMPLATES: Record<string, TemplateConfig> = {

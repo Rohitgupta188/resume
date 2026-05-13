@@ -61,6 +61,7 @@ export default function JobsPage() {
     fetchMatches(activeResume._id).then((matches) => {
       const map: Record<string, MatchResult> = {};
       matches.forEach((m) => {
+        if (!m.jobId) return;
         const jid = typeof m.jobId === "string" ? m.jobId : m.jobId._id;
         map[jid] = m;
       });

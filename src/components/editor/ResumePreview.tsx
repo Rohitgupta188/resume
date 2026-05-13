@@ -51,42 +51,38 @@ export function ResumePreview() {
       ───────────────────────────────────── */}
       <div
         ref={containerRef}
-        className="w-full min-h-screen bg-slate-100 dark:bg-zinc-900/40 flex justify-center py-8 px-4 overflow-auto preview-ui"
+        className="w-full min-h-screen bg-slate-100 dark:bg-zinc-900/40 flex justify-center py-8 px-4 preview-ui"
       >
+        {/* Resume Paper Preview */}
         <div
-          className="relative bg-white border border-slate-200 dark:border-zinc-700 origin-top h-fit"
+          className="relative border border-slate-200 dark:border-zinc-700 bg-white"
           style={{
-            width: `${A4_W}px`,
-            minHeight: `${A4_H}px`,
-            zoom,
-            boxShadow: "0 10px 30px -10px rgba(0,0,0,0.1), 0 4px 12px -4px rgba(0,0,0,0.05)",
+            width: `${A4_W * zoom}px`,
+            height: `${A4_H * zoom}px`,
+            boxShadow:
+              "0 10px 30px -10px rgba(0,0,0,0.1), 0 4px 12px -4px rgba(0,0,0,0.05)",
+            overflow: "visible",
           }}
         >
           {/* Paper Texture Overlay */}
           <div
             className="absolute inset-0 pointer-events-none opacity-[0.02] mix-blend-multiply"
             style={{
-              backgroundImage: "url('https://www.transparenttextures.com/patterns/paper-fibers.png')",
+              backgroundImage:
+                "url('https://www.transparenttextures.com/patterns/paper-fibers.png')",
             }}
           />
-
-          {/* Page Break Guide Lines — Visible in Editor Only */}
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 pointer-events-none z-10"
-            style={{
-              backgroundImage: `repeating-linear-gradient(
-                to bottom,
-                transparent 0px,
-                transparent calc(${A4_H}px - 2px),
-                rgba(71,85,105,0.7) calc(${A4_H}px - 2px),
-                rgba(71,85,105,0.7) ${A4_H}px
-              )`,
-            }}
-          />
-
           {/* Actual Template Content */}
-          <div className="relative z-0">
+          <div
+            className="relative z-1"
+            style={{
+              width: "210mm",
+              minHeight: "297mm",
+              transform: `scale(${zoom})`,
+              transformOrigin: "top left",
+              overflow: "visible",
+            }}
+          >
             <Template content={content} />
           </div>
         </div>
@@ -99,10 +95,10 @@ export function ResumePreview() {
         createPortal(
           <div id="resume-print-root">
             <div className="resume-print-content">
-              <Template content={content} />
+              <Template content={content} isPrint={true} />
             </div>
           </div>,
-          document.body
+          document.body,
         )}
 
       {/* ─────────────────────────────────────
@@ -117,11 +113,12 @@ export function ResumePreview() {
         @media print {
           /* 1. Reset Page and Body */
           @page {
-            size: A4;
-            margin: 0;
+            size: A4 portrait;
+            margin: 0.8cm 0.4cm;
           }
-          
-          html, body {
+
+          html,
+          body {
             height: auto !important;
             min-height: 0 !important;
             margin: 0 !important;
@@ -150,9 +147,11 @@ export function ResumePreview() {
             z-index: 9999 !important;
           }
 
+          
+
           .resume-print-content {
-            width: 210mm !important;
-            min-height: 297mm !important;
+            width: 100% !important;
+            margin: 0 auto !important;
             background: white !important;
             color: black !important;
             overflow: visible !important;
@@ -160,20 +159,30 @@ export function ResumePreview() {
           }
 
           /* 4. Content Protection Rules */
-          section, .resume-section, .experience-item, .project-item, .education-item {
-            break-inside: avoid !important;
-            page-break-inside: avoid !important;
+          .experience-item,
+          .project-item,
+          .education-item {
+            break-inside: avoid;
+            page-break-inside: avoid;
           }
 
-          h1, h2, h3 {
-            break-after: avoid !important;
-            page-break-after: avoid !important;
+          .section-title-block {
+            break-after: avoid;
+            page-break-after: avoid;
+          }
+
+          h1,
+          h2,
+          h3 {
+            break-after: avoid;
+            page-break-inside: avoid;
           }
 
           /* Force link colors and underline in print if needed */
           a {
             text-decoration: none !important;
             color: inherit !important;
+            text-align: justify !important;
           }
         }
       `}</style>

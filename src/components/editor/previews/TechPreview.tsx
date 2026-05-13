@@ -2,6 +2,7 @@
 import React from "react";
 import { CustomSectionsBlock } from "./CustomSectionsBlock";
 import { ResumeLink, cleanUrl } from "./resume-utils";
+import { renderSidebarSection } from "./SidebarSections";
 
 /* ─────────────────────────────────────────────────────────────
    TECH — Developer-focused. Monospaced accents, cyan branding.
@@ -10,7 +11,13 @@ import { ResumeLink, cleanUrl } from "./resume-utils";
 
 const DEFAULT_TECH_BLUE = "#0891b2";
 
-export function TechPreview({ content }: { content: any }) {
+export function TechPreview({
+  content,
+  isPrint = false,
+}: {
+  content: any;
+  isPrint?: boolean;
+}) {
   const safeContent = content || {};
   const personalInfo = safeContent.personalInfo || {};
   const summary = safeContent.summary || "";
@@ -32,10 +39,11 @@ export function TechPreview({ content }: { content: any }) {
 
   const SectionTitle = ({ children }: { children: React.ReactNode }) => (
     <h2
-      className="text-[9.5pt] font-bold uppercase tracking-widest mb-[10px]"
+      className="font-bold uppercase tracking-widest mb-[10px]"
       style={{
         color: themeColor,
-        fontFamily: "'Fira Code', 'Courier New', monospace",
+        fontFamily: "'Calibri', 'Inter', sans-serif",
+        fontSize: `${11 * scale}pt`,
       }}
     >
       &gt; {children}
@@ -67,124 +75,17 @@ export function TechPreview({ content }: { content: any }) {
   );
   const mainOrder = sectionOrder.filter((id: string) => MAIN_IDS.includes(id));
 
-  const renderSidebarSection = (id: string) => {
-    switch (id) {
-      case "skills":
-        return (
-          skills.length > 0 && (
-            <section key="skills">
-              <SectionTitle>skills</SectionTitle>
-              <div className="space-y-[6px]">
-                {skills.map((skill: string, i: number) => (
-                  <div
-                    key={i}
-                    className="px-[6px] py-[3px] bg-[#f3f4f6] text-[#111827] text-[8.5pt] font-mono rounded-sm border border-[#d1d5db]"
-                  >
-                    {skill.includes(":") ? (
-                      <>
-                        <span className="font-bold">
-                          {skill.split(":")[0]}:
-                        </span>
-                        <span>{skill.split(":").slice(1).join(":")}</span>
-                      </>
-                    ) : (
-                      skill
-                    )}
-                  </div>
-                ))}
-              </div>
-            </section>
-          )
-        );
-      case "education":
-        return (
-          education.length > 0 && (
-            <section key="education">
-              <SectionTitle>education</SectionTitle>
-              <div className="space-y-[10pt]">
-                {education.map((edu: any, i: number) => (
-                  <div key={i}>
-                    <p className="font-bold text-[9.5pt] text-[#111827] leading-tight">
-                      {edu.school}
-                    </p>
-                    <p className="text-[9pt] text-[#374151] mt-[2px]">
-                      {edu.degree}
-                      {edu.field ? ` in ${edu.field}` : ""}
-                    </p>
-                    <p className="text-[8pt] font-mono text-[#6b7280] mt-[2px]">
-                      {edu.year}
-                      {edu.gpa ? ` | GPA: ${edu.gpa}` : ""}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )
-        );
-      case "certifications":
-        return (
-          certifications.length > 0 && (
-            <section key="certifications">
-              <SectionTitle>certs</SectionTitle>
-              <div className="space-y-[8pt]">
-                {certifications.map((cert: any, i: number) => (
-                  <div key={i}>
-                    <p className="font-bold text-[9pt] text-[#111827] leading-tight">
-                      {cert.name}
-                    </p>
-                    <p className="text-[8.5pt] text-[#4b5563] mt-[2px]">
-                      {cert.issuer}
-                      {cert.date ? ` • ${cert.date}` : ""}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )
-        );
-      case "languages":
-        return (
-          languages.length > 0 && (
-            <section key="languages">
-              <SectionTitle>languages</SectionTitle>
-              <div className="space-y-[4px]">
-                {languages.map((l: any, i: number) => (
-                  <div
-                    key={i}
-                    className="text-[9pt] text-[#374151] flex justify-between font-mono"
-                  >
-                    <span className="font-semibold">{l.language}</span>
-                    <span className="text-[#6b7280]">{l.proficiency}</span>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )
-        );
-      case "customSections":
-        return (
-          customSections.length > 0 && (
-            <CustomSectionsBlock
-              key="customSections"
-              sections={customSections}
-              variant="vertical"
-              renderTitle={(title) => <SectionTitle>{title}</SectionTitle>}
-            />
-          )
-        );
-      default:
-        return null;
-    }
-  };
-
   const renderMainSection = (id: string) => {
     switch (id) {
       case "summary":
         return (
           summary && (
             <section key="summary">
-              <SectionTitle>profile</SectionTitle>
-              <p className="text-[9.5pt] leading-[1.6] text-[#374151]">
+              <SectionTitle> profile</SectionTitle>
+              <p
+                className="leading-[1.6] text-[#374151]"
+                style={{ fontSize: `${9.5 * scale}pt`, textAlign: "justify" }}
+              >
                 {summary}
               </p>
             </section>
@@ -198,18 +99,27 @@ export function TechPreview({ content }: { content: any }) {
               <div className="space-y-[14pt]">
                 {experience.map((exp: any, i: number) => (
                   <div
+                    className="experience-item pb-[10pt] border-b border-[#e5e7eb] last:border-b-0"
                     key={i}
-                    style={{ breakInside: "avoid", pageBreakInside: "avoid" }}
                   >
                     <div className="flex justify-between items-baseline mb-[2px]">
-                      <h3 className="font-bold text-[10.5pt] text-[#111827]">
+                      <h3
+                        className="font-bold text-[#111827]"
+                        style={{ fontSize: `${10.5 * scale}pt` }}
+                      >
                         {exp.role}
                       </h3>
-                      <span className="text-[8pt] text-[#6b7280] font-mono">
+                      <span
+                        className="text-[#6b7280] font-mono"
+                        style={{ fontSize: `${8 * scale}pt` }}
+                      >
                         {exp.duration}
                       </span>
                     </div>
-                    <p className="text-[9.5pt] font-semibold text-[#374151] mb-[6px]">
+                    <p
+                      className="font-semibold text-[#374151] mb-[6px]"
+                      style={{ fontSize: `${9.5 * scale}pt` }}
+                    >
                       {exp.company}
                     </p>
                     {exp.bullets?.length > 0 && (
@@ -217,13 +127,15 @@ export function TechPreview({ content }: { content: any }) {
                         {exp.bullets.map((b: string, j: number) => (
                           <li
                             key={j}
-                            className="flex gap-[8px] text-[9pt] text-[#4b5563] leading-normal"
+                            className="flex gap-[8px] text-[#4b5563] leading-normal"
+                            style={{ fontSize: `${9 * scale}pt` }}
                           >
                             <span
-                              className="text-[8pt] mt-[2px]"
+                              className="mt-[2px]"
                               style={{
                                 color: themeColor,
                                 fontFamily: "monospace",
+                                fontSize: `${8 * scale}pt`,
                               }}
                             >
                               ~
@@ -244,24 +156,36 @@ export function TechPreview({ content }: { content: any }) {
           projects.length > 0 && (
             <section key="projects">
               <SectionTitle>projects</SectionTitle>
-              <div className="space-y-[14pt]">
+              <div className="space-y-2">
                 {projects.map((proj: any, i: number) => (
                   <div
+                    className="project-item pb-[10pt] border-b border-[#e5e7eb] last:border-b-0"
                     key={i}
-                    style={{ breakInside: "avoid", pageBreakInside: "avoid" }}
                   >
-                    <div className="flex justify-between items-baseline mb-[2px]">
-                      <h3 className="font-bold text-[10pt] text-[#111827]">
+                    <div className="flex justify-between items-baseline mb-[6px]">
+                      <h3
+                        className="font-bold text-[#111827]"
+                        style={{ fontSize: `${10 * scale}pt` }}
+                      >
                         {proj.title}
                       </h3>
                       <ResumeLink
                         href={proj.link}
-                        className="text-[8pt] font-mono ml-2 shrink-0"
-                        style={{ color: themeColor }}
+                        className="font-mono ml-2 shrink-0"
+                        style={{
+                          color: themeColor,
+                          fontSize: `${8 * scale}pt`,
+                        }}
                       />
                     </div>
                     {proj.techStack && (
-                      <p className="text-[8pt] font-mono mb-[4px] text-[#6b7280]">
+                      <p
+                        className="font-mono mb-[8px] text-[#6b7280]"
+                        style={{
+                          fontSize: `${8 * scale}pt`,
+                          textAlign: "justify",
+                        }}
+                      >
                         [
                         {Array.isArray(proj.techStack)
                           ? proj.techStack.join(", ")
@@ -270,22 +194,34 @@ export function TechPreview({ content }: { content: any }) {
                       </p>
                     )}
                     {proj.description && (
-                      <p className="text-[9pt] text-[#374151] mb-[4px] leading-[1.4]">
+                      <p
+                        className="text-[#374151] mb-[8px] leading-[1.4] font-bold"
+                        style={{
+                          fontSize: `${9 * scale}pt`,
+                          textAlign: "justify",
+                        }}
+                      >
                         {proj.description}
                       </p>
                     )}
                     {proj.bullets?.length > 0 && (
-                      <ul className="space-y-[3px]">
+                      <ul className="space-y-[8px]">
                         {proj.bullets.map((b: string, j: number) => (
                           <li
                             key={j}
-                            className="flex gap-[8px] text-[9pt] text-[#4b5563] leading-[1.4]"
+                            className="flex gap-[8px] text-[#4b5563] leading-[1.4]"
+                            style={{
+                              fontSize: `${9 * scale}pt`,
+                              textAlign: "justify",
+                            }}
                           >
                             <span
-                              className="text-[8pt] mt-[2px]"
+                              className="mt-[2px]"
                               style={{
                                 color: themeColor,
                                 fontFamily: "monospace",
+                                fontSize: `${8 * scale}pt`,
+                                textAlign: "justify",
                               }}
                             >
                               ~
@@ -308,14 +244,21 @@ export function TechPreview({ content }: { content: any }) {
 
   return (
     <div
-      className="min-h-full bg-white"
-      style={{ fontFamily: "'Inter', sans-serif" }}
+      className={`bg-[#f3f4f6] flex flex-col items-center ${
+        isPrint ? "" : "py-6"
+      }`}
+      style={{ zoom: isPrint ? 1 : undefined }}
     >
       <div
+        className="resume-page flex flex-col text-[#1f2937]"
         style={{
-          zoom: scale,
+          width: "210mm",
+          minHeight: "290mm",
+          padding: "16pt 24pt",
+          background: "white",
+          boxSizing: "border-box",
+          overflow: "visible",
         }}
-        className="px-[54pt] py-[36pt] flex flex-col text-[#1f2937]"
       >
         {/* ── HEADER ── */}
         <header
@@ -323,12 +266,15 @@ export function TechPreview({ content }: { content: any }) {
           style={{ borderBottomColor: themeColor }}
         >
           <div className="space-y-[4px]">
-            <h1 className="text-[26pt] font-black uppercase tracking-tight text-[#111827] leading-none">
+            <h1
+              className="font-black uppercase tracking-tight text-[#111827] leading-none"
+              style={{ fontSize: `${26 * scale}pt` }}
+            >
               {personalInfo.name || "DEVELOPER NAME"}
             </h1>
             <div
-              className="flex gap-[12px] text-[9pt] font-bold"
-              style={{ color: themeColor }}
+              className="flex gap-[12px] font-bold"
+              style={{ color: themeColor, fontSize: `${9 * scale}pt` }}
             >
               {personalInfo.portfolio && (
                 <ResumeLink
@@ -348,7 +294,10 @@ export function TechPreview({ content }: { content: any }) {
               )}
             </div>
           </div>
-          <div className="text-right flex flex-col gap-[2px] text-[8.5pt] text-[#4b5563] font-mono">
+          <div
+            className="text-right flex flex-col gap-[2px] text-[#4b5563] font-mono"
+            style={{ fontSize: `${8.5 * scale}pt` }}
+          >
             {personalInfo.email && <span>{personalInfo.email}</span>}
             {personalInfo.phone && <span>{personalInfo.phone}</span>}
             {personalInfo.location && <span>{personalInfo.location}</span>}
@@ -363,7 +312,22 @@ export function TechPreview({ content }: { content: any }) {
 
           {/* ── SIDEBAR ── */}
           <aside className="w-[35%] space-y-[18pt] pl-[16pt] border-l border-[#e5e7eb]">
-            {sidebarOrder.map((id: string) => renderSidebarSection(id))}
+            {sidebarOrder.map((id: string) =>
+              renderSidebarSection({
+                id,
+                scale,
+                SectionTitle,
+                variant: "tech",
+
+                data: {
+                  skills,
+                  education,
+                  certifications,
+                  languages,
+                  customSections,
+                },
+              }),
+            )}
           </aside>
         </div>
       </div>

@@ -150,6 +150,6 @@ export const GET = withAuth(async (req, { user, params }) => {
       .limit(20)
       .lean();
 
-    return success({ matches });
+    return success({ matches: matches.filter((m) => m.jobId) });
   });
 });

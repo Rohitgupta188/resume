@@ -22,17 +22,21 @@ interface CustomSection {
 interface CustomSectionsProps {
   sections?: CustomSection[];
   headingCls?: string;
+  itemCls?: string;
   variant?: "chips" | "bullets" | "inline" | "vertical";
   accentColor?: string;
   renderTitle?: (title: string) => React.ReactNode;
+  scale?: number;
 }
 
 export function CustomSectionsBlock({
   sections,
   headingCls = "text-[9pt] font-bold uppercase tracking-widest text-gray-500 mb-2",
+  itemCls = "text-gray-700",
   variant = "chips",
   accentColor,
   renderTitle,
+  scale = 1,
 }: CustomSectionsProps) {
   if (!sections || sections.length === 0) return null;
 
@@ -54,11 +58,22 @@ export function CustomSectionsBlock({
             )}
 
             {variant === "chips" && (
-              <div className="flex flex-wrap gap-1.5">
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: `${6 * scale}px`,
+                }}
+              >
                 {sec.items.map((item, j) => (
                   <span
                     key={j}
-                    className="text-[9pt] px-2 py-0.5 bg-gray-100 text-gray-700 rounded border border-gray-200 whitespace-pre-wrap"
+                    className={`bg-gray-100 ${itemCls} border border-gray-200 whitespace-pre-wrap rounded font-bold`}
+                    style={{
+                      fontSize: `${9 * scale}pt`,
+                      padding: `${2 * scale}px ${8 * scale}px`,
+                      lineHeight: 1.35,
+                    }}
                   >
                     {item}
                   </span>
@@ -67,26 +82,68 @@ export function CustomSectionsBlock({
             )}
 
             {variant === "bullets" && (
-              <ul className="space-y-1">
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: `${4 * scale}px`,
+                }}
+              >
                 {sec.items.map((item, j) => (
-                  <li key={j} className="text-[9.5pt] text-gray-700 flex gap-2 whitespace-pre-wrap leading-relaxed">
-                    <span className="text-gray-300 shrink-0">•</span>
+                  <div
+                    key={j}
+                    className={`${itemCls} whitespace-pre-wrap font-bold`}
+                    style={{
+                      display: "flex",
+                      gap: `${8 * scale}px`,
+                      fontSize: `${9.5 * scale}pt`,
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    <span
+                      className={`${itemCls} shrink-0`}
+                      style={{
+                        fontSize: `${10 * scale}pt`,
+                      }}
+                    >
+                      •
+                    </span>
+
                     <span>{item}</span>
-                  </li>
+                  </div>
                 ))}
-              </ul>
+              </div>
             )}
 
             {variant === "inline" && (
-              <div className="text-[9.5pt] text-gray-700 leading-relaxed whitespace-pre-wrap">
+              <div
+                className={`${itemCls} whitespace-pre-wrap font-bold`}
+                style={{
+                  fontSize: `${9.5 * scale}pt`,
+                  lineHeight: 1.6,
+                }}
+              >
                 {sec.items.join(" • ")}
               </div>
             )}
 
             {variant === "vertical" && (
-              <div className="space-y-[4px]">
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: `${4 * scale}px`,
+                }}
+              >
                 {sec.items.map((item, j) => (
-                  <div key={j} className="text-[9.5pt] text-gray-700 whitespace-pre-wrap leading-tight">
+                  <div
+                    key={j}
+                    className={`font-bold ${itemCls} whitespace-pre-wrap`}
+                    style={{
+                      fontSize: `${9.5 * scale}pt`,
+                      lineHeight: 1.3,
+                    }}
+                  >
                     {item}
                   </div>
                 ))}

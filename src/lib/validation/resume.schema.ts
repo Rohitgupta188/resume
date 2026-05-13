@@ -54,7 +54,11 @@ export const experienceEntrySchema = z.object({
 export const projectEntrySchema = z.object({
   title: z.string().trim().max(200).optional().default(""),
   description: z.string().trim().max(1000).optional().default(""),
-  techStack: stringArraySchema,
+  techStack: z
+    .preprocess(
+      (val) => (Array.isArray(val) ? val.join(", ") : val),
+      z.string().trim().max(500).optional().default(""),
+    ),
   link: optionalUrlSchema,
   bullets: stringArraySchema,
 });

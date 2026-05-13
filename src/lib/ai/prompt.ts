@@ -105,7 +105,6 @@ SKILLS
 PROJECTS
   ✓ Title: exact name from resume
   ✓ Description: 1 sentence max, outcome-focused
-  ✓ techStack: only technologies mentioned in the resume
   ✓ bullets: 2-3 bullets per project, action verb + outcome format
   ✓ link: copy verbatim from resume; use "" if absent
   ✗ If the resume has no projects, return "projects": []
